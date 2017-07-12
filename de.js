@@ -552,6 +552,7 @@ eslint
                             ) :
                             this.insertRow().$(c) :
                         this.insertRow();
+
                     return this;
                 }
             }),
@@ -583,6 +584,7 @@ eslint
                             ) :
                             this.insertCell().$(c) :
                         this.insertCell();
+
                     return this;
                 }
             })
@@ -599,6 +601,8 @@ eslint
                                 new Option(v, k)
                         )
                     );
+
+                    return this;
                 }
             })
         });
