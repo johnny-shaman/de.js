@@ -231,7 +231,7 @@ eslint
             },
 
             set (v) {
-                this._({__oppo__: de._({value: v})});
+                this.__({__oppo__: de._({value: v})});
             }
         }),
 
@@ -241,7 +241,7 @@ eslint
             },
 
             set (v) {
-                this._({__stop__: de._({value: v})});
+                this.__({__stop__: de._({value: v})});
             }
         }),
 
@@ -545,13 +545,14 @@ eslint
         HTMLTableElement.__({
             $: de._({
                 value (c) {
-                    return is.valid(c) ?
+                    is.valid(c) ?
                         is.array(c) ?
                             c.each(
                                 (v) => this.insertRow().$(v)
                             ) :
                             this.insertRow().$(c) :
                         this.insertRow();
+                    return this;
                 }
             }),
 
@@ -575,13 +576,14 @@ eslint
         HTMLTableRowElement.__({
             $: de._({
                 value (c) {
-                    return is.valid(c) ?
+                    is.valid(c) ?
                         is.array(c) ?
                             c.each(
                                 (v) => this.insertCell().$(v)
                             ) :
-                        this.insertCell().$(c) :
-                    this.insertCell();
+                            this.insertCell().$(c) :
+                        this.insertCell();
+                    return this;
                 }
             })
         });
