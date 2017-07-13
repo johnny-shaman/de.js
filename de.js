@@ -81,18 +81,19 @@ eslint
         _: de.configurable,
         ep: (of) => (fo) => is.function(of) ?
             fo.each(
-                (v) => is.pure(v) ?
+                (v, k) => is.pure(v) ?
                     de.ep(of)(fo) :
-                    of(fo[v], v)
+                    of(v, k)
             ) :
             of.each(
-                (v) => is.pure(v) ?
+                (v, k) => is.pure(v) ?
                 de.ep(fo)(of) :
-                fo(of[v], v)
+                fo(v, k)
             ),
 
         fine: Object.defineProperties,
-        json: JSON.parse
+        json: JSON.parse,
+        alt: (l) => new Array(l).fill(true).map
     });
 
     de.fine(Function.prototype, {
@@ -132,6 +133,21 @@ eslint
                     }
                     default: return this.keep;
                 }
+            }
+        }),
+
+        fact: de._({
+            value (o) {
+                Object.assign(this, o);
+                o.mix((vv, k) => ({
+                    [k]: de._({
+                        get: () => this[k],
+                        set: (v) => this[k] = v
+                    })
+                }));
+                this.__(o);
+
+                return this.keep;
             }
         })
     });
@@ -216,6 +232,18 @@ eslint
             }
         }),
 
+        mix: de._({
+            value (cb) {
+                return de.ep(this.copy)((v, k) => this[k] = cb(v, k));
+            }
+        }),
+
+        map: de._({
+            value (cb) {
+                return this.copy.each((v, k) => this[k] = cb(v, k));
+            }
+        }),
+
         json: de._({
             get () {
                 return JSON.stringify(this);
@@ -259,10 +287,10 @@ eslint
                 this[e.type][
                     is.valid(e._) ?
                         e._.type :
-                        is.valid(this._.type) ?
-                            this._.type :
-                            ""
-                ](e, this);
+                        is.valid(this.type) ?
+                            this.type :
+                            "defaultHandler"
+                ].call(this, e);
                 is.function(this[e.type]) && this[e.type](e);
             }
         })
