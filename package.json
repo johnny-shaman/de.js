@@ -1,7 +1,7 @@
 {
-    "author" : "azu",
+    "author" : "test",
     "name" : "Browser_CI_as_a_Service",
-    "description" : "Buster.JS with CI Service example",
+    "description" : "test",
     "version" : "0.0.1",
     "scripts" : {
         "test" : "node_modules/.bin/buster-test -r specification"
