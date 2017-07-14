@@ -1,0 +1,15 @@
+{
+    "author" : "azu",
+    "name" : "Browser_CI_as_a_Service",
+    "description" : "Buster.JS with CI Service example",
+    "version" : "0.0.1",
+    "scripts" : {
+        "test" : "node_modules/.bin/buster-test -r specification"
+    },
+    "devDependencies" : {
+        "buster" : "~0.6"
+    },
+    "engines" : {
+        "node" : "~0.8"
+    }
+}
