@@ -283,14 +283,7 @@ eslint
             value (e) {
                 this.stop && e.stopPropagation();
                 this.oppo && e.preventDefault();
-                is.object(this[e.type]) &&
-                this[e.type][
-                    is.valid(e._) ?
-                        e._.type :
-                        is.valid(this.type) ?
-                            this.type :
-                            "defaultHandler"
-                ].call(this, e);
+                is.object(this[e.type]) && this[e.type]["type"].call(this, e);
                 is.function(this[e.type]) && this[e.type](e);
             }
         })
@@ -637,18 +630,14 @@ eslint
 
         WebSocket.__({
             say: de._({
-                get () {
-                    return this.send;
-                },
+                value (v) {
+                    this.send(
+                        is.string(v) ?
+                            v :
+                            v.json
+                    );
 
-                set (v) {
-                    let w = is.string(v) ?
-                        v :
-                        v.json;
-
-                    this.send(w);
-
-                    return true;
+                    return this;
                 }
             }),
 
@@ -661,18 +650,14 @@ eslint
 
         RTCDataChannel.__({
             say: de._({
-                get () {
-                    return this.send;
-                },
+                value (v) {
+                    this.send(
+                        is.string(v) ?
+                            v :
+                            v.json
+                    );
 
-                set (v) {
-                    let w = is.string(v) ?
-                        v :
-                        v.json;
-
-                    this.send(w);
-
-                    return true;
+                    return this;
                 }
             }),
 
