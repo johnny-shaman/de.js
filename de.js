@@ -283,7 +283,9 @@ eslint
             value (e) {
                 this.stop && e.stopPropagation();
                 this.oppo && e.preventDefault();
-                is.object(this[e.type]) && this[e.type]["type"].call(this, e);
+                is.object(this[e.type]) && this[e.type][
+                    is.string(e._.type) ? e._.type : this[e.type]["type"]
+                ].call(this, e);
                 is.function(this[e.type]) && this[e.type](e);
             }
         })
