@@ -16,7 +16,11 @@ global
     RTCPeerConnection,
     RTCSessionDescription,
     RTCDataChannel,
-    Window
+    Window,
+    select,
+    label,
+    input,
+    iframe
 */
 /*
 eslint
@@ -57,29 +61,26 @@ eslint
         "self": (t) => is(t).prototype === t
     });
 
-    let de = {
-        configurable: (o) => Object.assign({configurable: true}, o),
+    let de = glb.de = Object.create(null, {
+        configurable: {value: (o) => Object.assign({configurable: true}, o)},
 
-        enumerable: (o) => Object.assign({
+        enumerable: {value: (o) => Object.assign({
             configurable: true,
             enumerable: true
-        }, o),
+        }, o)},
 
-        writable: (o) => Object.assign({
+        writable: {value: (o) => Object.assign({
             configurable: true,
             writable: true
-        }, o),
+        }, o)},
 
-        all: (o) => Object.assign({
+        all: {value: (o) => Object.assign({
             enumerable: true,
             configurable: true,
             writable: true
-        }, o)
-    };
+        }, o)},
 
-    Object.assign(de, {
-        _: de.configurable,
-        ep: (of) => (fo) => is.function(of) ?
+        ep: {value: (of) => (fo) => is.function(of) ?
             fo.each(
                 (v, k) => is.pure(v) ?
                     de.ep(of)(fo) :
@@ -89,11 +90,15 @@ eslint
                 (v, k) => is.pure(v) ?
                 de.ep(fo)(of) :
                 fo(v, k)
-            ),
+            )
+        },
 
-        fine: Object.defineProperties,
-        json: JSON.parse,
-        alt: (l) => new Array(l).fill(true).map
+        fine: {value: Object.defineProperties},
+        alt: {value: (l) => new Array(l).fill(true).map}
+    });
+
+    de.fine(de, {
+        _:{value: de.configurable}
     });
 
     de.fine(Function.prototype, {
@@ -284,7 +289,9 @@ eslint
                 this.stop && e.stopPropagation();
                 this.oppo && e.preventDefault();
                 is.object(this[e.type]) && this[e.type][
-                    is.string(e._.type) ? e._.type : this[e.type]["type"]
+                    is.string(e._.type) ?
+                    e._.type :
+                    this[e.type]["type"]
                 ].call(this, e);
                 is.function(this[e.type]) && this[e.type](e);
             }
@@ -377,7 +384,7 @@ eslint
 
             _: de._({
                 get () {
-                    return this.data && this.data.json;
+                    return this.data && this.data.json || undefined;
                 },
                 set (v) {
                     this.data = v.json;
@@ -918,6 +925,44 @@ eslint
                 }
             })
         });
+
+        let Select = function (tag, o) {
+            let $ = select.$(o);
+            let $$ = label.$([tag, $]);
+            this
+            .__({
+                $$: de._({
+                    get () {
+                        return $$;
+                    }
+                }),
+    
+                $: de._({
+                    get () {
+                        return $;
+                    }
+                })
+            })
+        };
+
+        let Input = function (tag, type, name) {
+            let $ = input._({type, name});
+            let $$ = label.$([tag, $]);
+            this
+            .__({
+                $$: de._({
+                    get () {
+                        return $$;
+                    }
+                }),
+
+                $: de._({
+                    get () {
+                        return $;
+                    }
+                })
+            })
+        };
 
         let XPath = glb.XPath = function XPath (uri, ssl) {
             this._(
