@@ -94,6 +94,7 @@ eslint
         },
 
         fine: {value: Object.defineProperties},
+        al: {value: Object.create},
         alt: {value: (l) => new Array(l).fill(true).map}
     });
 
@@ -234,6 +235,12 @@ eslint
         copy: de._({
             get () {
                 return Object.create(is(this).prototype, this.de);
+            }
+        }),
+
+        deal: de._({
+            get () {
+                return Object.create(this);
             }
         }),
 
@@ -486,28 +493,28 @@ eslint
 
         HTMLCollection.__({
             id: {
-                get () {
-                    return this.toArray.id;
+                value (t, s) {
+                    return this.toArray.id(t, s);
                 }
             },
 
             each: {
-                get () {
-                    return this.toArray.each;
+                value (f) {
+                    return this.toArray.each(f);
                 }
             }
         });
 
         NodeList.__({
             id: {
-                get () {
-                    return this.toArray.id;
+                value (t, s) {
+                    return this.toArray.id(t, s);
                 }
             },
 
             each: {
-                get () {
-                    return this.toArray.each;
+                value (f) {
+                    return this.toArray.each(f);
                 }
             }
         });
@@ -596,8 +603,8 @@ eslint
             deep: de._({
                 value (f) {
                     return this.rows.each(
-                        (cr, r) => cr.each(
-                            (v, c) => f(v, r, c)
+                        (cr, r) => this.rows[r].each(
+                            (v, c) => f(this.cell(r)(c), r, c)
                         )
                     );
                 }
