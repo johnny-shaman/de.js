@@ -942,7 +942,7 @@ eslint
                         return $;
                     }
                 })
-            })
+            });
         };
 
         let Input = function (tag, type, name) {
@@ -961,7 +961,7 @@ eslint
                         return $;
                     }
                 })
-            })
+            });
         };
 
         let XPath = glb.XPath = function XPath (uri, ssl) {
