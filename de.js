@@ -58,7 +58,8 @@ eslint
         "pure": (t) => is.object(t) || is.array(t),
         "string": (t) => is(t) === String,
         "valid": (t) => is.blank(t) || is.nan(t) || is(t) !== t,
-        "self": (t) => is(t).prototype === t
+        "self": (t) => is(t).prototype === t,
+        "symbol": (t) => is(t) === Symbol
     });
 
     let de = glb.de = Object.create(null, {
@@ -99,7 +100,7 @@ eslint
     });
 
     de.fine(de, {
-        _:{value: de.configurable}
+        _: {value: de.configurable}
     });
 
     de.fine(Function.prototype, {
@@ -603,8 +604,8 @@ eslint
             deep: de._({
                 value (f) {
                     return this.rows.each(
-                        (cr, r) => this.rows[r].each(
-                            (v, c) => f(this.cell(r)(c), r, c)
+                        (cr, r) => cr.each(
+                            (v, c) => f(v, r, c)
                         )
                     );
                 }
@@ -623,6 +624,12 @@ eslint
                         this.insertCell();
 
                     return this;
+                }
+            }),
+
+            each: de._({
+                value (f) {
+                    return this.cells.each(f);
                 }
             })
         });
