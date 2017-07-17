@@ -70,28 +70,33 @@ eslint
             enumerable: true
         }, o)},
 
-        writable: {value: (o) => Object.assign({
-            configurable: true,
-            writable: true
-        }, o)},
+        writable: {
+            value: (o) => Object.assign({
+                configurable: true,
+                writable: true
+            }, o)
+        },
 
-        all: {value: (o) => Object.assign({
-            enumerable: true,
-            configurable: true,
-            writable: true
-        }, o)},
+        all: {
+            value: (o) => Object.assign({
+                enumerable: true,
+                configurable: true,
+                writable: true
+            }, o)
+        },
 
-        ep: {value: (of) => (fo) => is.function(of) ?
-            fo.each(
-                (v, k) => is.pure(v) ?
-                    de.ep(of)(fo) :
-                    of(v, k)
-            ) :
-            of.each(
-                (v, k) => is.pure(v) ?
-                de.ep(fo)(of) :
-                fo(v, k)
-            )
+        ep: {
+            value: (of) => (fo) => is.function(of) ?
+                fo.each(
+                    (v, k) => is.pure(v) ?
+                        de.ep(of)(fo) :
+                        of(v, k)
+                ) :
+                of.each(
+                    (v, k) => is.pure(v) ?
+                    de.ep(fo)(of) :
+                    fo(v, k)
+                )
         },
 
         fine: {value: Object.defineProperties},
@@ -99,9 +104,7 @@ eslint
         alt: {value: (l) => new Array(l).fill(true).map}
     });
 
-    de.fine(de, {
-        _: {value: de.configurable}
-    });
+    de.fine(de, {_: {value: de.configurable}});
 
     de.fine(Function.prototype, {
         keep: de._({
@@ -333,6 +336,7 @@ eslint
         }),
 
         kick: de._({value: Array.prototype.shift}),
+
         push: de._({
             value (v) {
                 this[this.length] = v;
