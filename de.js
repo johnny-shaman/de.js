@@ -944,44 +944,6 @@ eslint
             })
         });
 
-        let Select = function (tag, o) {
-            let $ = select.$(o);
-            let $$ = label.$([tag, $]);
-            this
-            .__({
-                $$: de._({
-                    get () {
-                        return $$;
-                    }
-                }),
-    
-                $: de._({
-                    get () {
-                        return $;
-                    }
-                })
-            });
-        };
-
-        let Input = function (tag, type, name) {
-            let $ = input._({type, name});
-            let $$ = label.$([tag, $]);
-            this
-            .__({
-                $$: de._({
-                    get () {
-                        return $$;
-                    }
-                }),
-
-                $: de._({
-                    get () {
-                        return $;
-                    }
-                })
-            });
-        };
-
         let XPath = glb.XPath = function XPath (uri, ssl) {
             this._(
                 iframe.$(
