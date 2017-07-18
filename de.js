@@ -32,12 +32,6 @@ eslint
 
     let $ = glb.$ = glb.$ || {};
 
-    Object.assign($, {
-        html: document.documentElement,
-        head: document.head,
-        body: document.body
-    });
-
     let is = glb.is = Object.assign((t) => {
         try {
             return t.constructor;
@@ -387,6 +381,12 @@ eslint
     });
 
     glb === window && (() => {
+    Object.assign($, {
+        html: document.documentElement,
+        head: document.head,
+        body: document.body
+    });
+
         Event.__({
             $: de._({
                 get () {
