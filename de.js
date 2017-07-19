@@ -39,6 +39,7 @@ eslint
             return t;
         }
     }, {
+        "able": (t) => (v) => is.function(t) && t(v) || undefined,
         "array": (t) => is(t) === Array,
         "blank": (t) => t === "",
         "boolean": (t) => is(t) === Boolean,
@@ -51,7 +52,8 @@ eslint
         "object": (t) => is(t) === Object,
         "pure": (t) => is.object(t) || is.array(t),
         "string": (t) => is(t) === String,
-        "valid": (t) => is.blank(t) || is.nan(t) || is(t) !== t,
+        "there": (t) => is.valid(t.length) && t.length !== 0 || is.valid(t.keys) && is.there(t.keys),
+        "valid": (t) => !is.blank(t) && !is.nan(t) && is(t) !== t,
         "self": (t) => is(t).prototype === t,
         "symbol": (t) => is(t) === Symbol
     });
@@ -95,7 +97,8 @@ eslint
 
         fine: {value: Object.defineProperties},
         al: {value: Object.create},
-        alt: {value: (l) => new Array(l).fill(true).map}
+        alt: {value: (l) => new Array(l).fill(true).map},
+        legate: {value: is.able}
     });
 
     de.fine(de, {_: {value: de.configurable}});
@@ -260,8 +263,8 @@ eslint
             }
         }),
 
-        __oppo__: de._({value: true}),
-        __stop__: de._({value: true}),
+        __oppo__: de._({value: false}),
+        __stop__: de._({value: false}),
 
         oppo: de._({
             get () {
