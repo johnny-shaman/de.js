@@ -381,11 +381,11 @@ eslint
     });
 
     glb === window && (() => {
-    Object.assign($, {
-        html: document.documentElement,
-        head: document.head,
-        body: document.body
-    });
+        Object.assign($, {
+            html: document.documentElement,
+            head: document.head,
+            body: document.body
+        });
 
         Event.__({
             $: de._({
@@ -396,8 +396,10 @@ eslint
 
             _: de._({
                 get () {
-                    return this.data && this.data.json || undefined;
+                    return this.data && this.data.json ||
+                    is.held(this.target)(Element) && this.target.now;
                 },
+
                 set (v) {
                     this.data = v.json;
 
