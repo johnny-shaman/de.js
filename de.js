@@ -82,17 +82,9 @@ eslint
         },
 
         ep: {
-            value: (of) => (fo) => is.function(of) ?
-                fo.each(
-                    (v, k) => is.pure(v) ?
-                        de.ep(of)(fo) :
-                        of(v, k)
-                ) :
-                of.each(
-                    (v, k) => is.pure(v) ?
-                    de.ep(fo)(of) :
-                    fo(v, k)
-                )
+            value: (a) => (b) => is.function(a) &&
+                b.each((v, k) => is.pure(v) && de.ep(v)(a) || a(v, k)) ||
+                a.each((v, k) => is.pure(v) && de.ep(v)(b) || b(v, k))
         },
 
         fine: {value: Object.defineProperties},
@@ -127,17 +119,17 @@ eslint
             value (p) {
                 switch (is(p)) {
                     case Object: {
-                        is.self(p) ?
-                            this.prototype = Object.create(p.prototype) :
-                            this.__(p.de);
+                        this.prototype = is.self(p) && Object.create(p) || Object.create(Object.prototype, p.de);
 
                         return this.keep;
                     }
+
                     case Function: {
                         this.prototype = Object.create(p.prototype);
 
                         return this.keep;
                     }
+
                     default: return this.keep;
                 }
             }
@@ -146,15 +138,12 @@ eslint
         fact: de._({
             value (o) {
                 Object.assign(this, o);
-                o.mix((vv, k) => ({
+                return this.__(o.map((vv, k) => ({
                     [k]: de._({
                         get: () => this[k],
                         set: (v) => this[k] = v
                     })
-                }));
-                this.__(o);
-
-                return this.keep;
+                })));
             }
         })
     });
@@ -201,9 +190,7 @@ eslint
 
         on: de._({
             value (e) {
-                is.array(e) ?
-                    e.each((v) => this.on(v)) :
-                    this.$ && this.$.on(e, this);
+                is.array(e) && e.each((v) => this.on(v)) || this.$ && this.$.on(e, this);
 
                 return this;
             }
@@ -211,9 +198,7 @@ eslint
 
         off: de._({
             value (e) {
-                is.array(e) ?
-                    e.each((v) => this.on(v)) :
-                    this.$ && this.$.off(e, this);
+                is.array(e) && e.each((v) => this.off(v)) || this.$ && this.$.off(e, this);
 
                 return this;
             }
@@ -297,9 +282,7 @@ eslint
                 this.stop && e.stopPropagation();
                 this.oppo && e.preventDefault();
                 is.object(this[e.type]) && this[e.type][
-                    is.string(e._.type) ?
-                    e._.type :
-                    this[e.type]["type"]
+                    is.string(e._.type) && e._.type || this[e.type]["type"]
                 ].call(this, e);
                 is.function(this[e.type]) && this[e.type](e);
             }
@@ -310,9 +293,7 @@ eslint
         _: de._({value: Array.prototype.splice}),
         id: de._({
             value (t, s) {
-                return this.indexOf(t, s) === -1 ?
-                    false :
-                    this.indexOf(t, s);
+                return this.indexOf(t, s) === -1 && false || this.indexOf(t, s);
             }
         }),
 
@@ -433,58 +414,41 @@ eslint
             $: de._({
                 value (t) {
                     switch (is(t)) {
-                        case Object:
-                        case Array:
-                        case NodeList: {
+                        case Object: return (ks) => this.$(ks.map((v) => t[v]));
+                        case Array || NodeList || HTMLCollection: {
                             let ve = document.createDocumentFragment();
 
                             t.each((v) => ve.$(v));
                             this.append(ve);
-
-                            return this;
+                            break;
                         }
 
-                        case null:
-                        case undefined: return this.outer.out(this);
-                        case String:
-                        case Number:
-                        case Boolean: {
-                            is.defined(this.src) ?
-                                this._({src: String(t)}) :
-                                this.append(t);
-
-                            return this;
+                        case null || undefined: return this.outer.out(this);
+                        case String || Number || Boolean: {
+                            is.defined(this.src) && this._({src: String(t)}) || this.append(t);
+                            break;
                         }
 
-                        default: {
-                            this.append(t);
-
-                            return this;
-                        }
+                        default: this.append(t);
                     }
+                    return this;
                 }
             }),
 
             out: de._({
                 value (t) {
-                return is.valid(t) ?
-                    !this.outer.removeChild(this) || this.outer :
-                    !this.removeChild(t) || this;
+                    let outer = this.outer;
+
+                    return is.valid(t) && (!this.removeChild(t) || this) || !outer.removeChild(this) || outer;
                 }
             }),
 
             _: de._({
                 value (a) {
                     is.object(a) &&
-                    a.each(
-                        (v, k) => is.valid(v) ?
-                            this.setAttribute(k, v) :
-                            this.removeAttribute(k)
-                    );
+                    a.each((v, k) => is.valid(v) && !this.setAttribute(k, v) || this.removeAttribute(k));
 
-                    return is.string(a) ?
-                        this.getAttribute(a) :
-                        this;
+                    return is.string(a) && this.getAttribute(a) || this;
                 }
             }),
 
@@ -532,13 +496,7 @@ eslint
         Location.__({
             _: de._({
                 get () {
-                    return decodeURIComponent(
-                        location.search.slice(1)
-                    ).json;
-                },
-
-                set (value) {
-                    location.search = value.json;
+                    return decodeURIComponent(location.search.slice(1)).json;
                 }
             })
         });
@@ -548,14 +506,11 @@ eslint
                 get () {
                     switch (this.tagName) {
                         case "option": return this.outer.value;
-                        case "input":
-                        case "select": switch (this.type) {
-                            case "checkbox":
-                            case "radio": return this.checked;
+                        case "input" || "select": switch (this.type) {
+                            case "checkbox" || "radio": return this.checked;
                             default: return this.value;
                         }
-                        case "img":
-                        case "iframe": return this.src;
+                        case "img" || "iframe": return this.src;
                         default: return this.innerText;
                     }
                 },
@@ -563,14 +518,11 @@ eslint
                 set (v) {
                     switch (this.tagName) {
                         case "option": this.outer.value = v; break;
-                        case "input":
-                        case "select": switch (this.type) {
-                            case "checkbox":
-                            case "radio": this.checked = v; break;
+                        case "input" || "select": switch (this.type) {
+                            case "checkbox" || "radio": this.checked = v; break;
                             default: this.value = v; break;
                         } break;
-                        case "img":
-                        case "iframe": this.src = v; break;
+                        case "img" || "iframe": this.src = v; break;
                         default: this.innerText = v;
                     }
 
@@ -580,9 +532,8 @@ eslint
 
             wear: de._({
                 value (s) {
-                    is.object(s) ?
-                        this.style._(s) :
-                        this.style.cssText = s;
+                    is.object(s) && this.style._(s);
+                    this.style.cssText = is.string(s) && s || this.style.cssText;
 
                     return this;
                 }
@@ -592,15 +543,10 @@ eslint
         HTMLTableElement.__({
             $: de._({
                 value (c) {
-                    is.valid(c) ?
-                        is.array(c) ?
-                            c.each(
-                                (v) => this.insertRow().$(v)
-                            ) :
-                            this.insertRow().$(c) :
+                    return is.valid(c) &&
+                        (is.array(c) && !c.each((v) => this.insertRow().$(v)) || this) ||
+                        (!this.insertRow().$(c) || this) ||
                         this.insertRow();
-
-                    return this;
                 }
             }),
 
@@ -624,15 +570,10 @@ eslint
         HTMLTableRowElement.__({
             $: de._({
                 value (c) {
-                    is.valid(c) ?
-                        is.array(c) ?
-                            c.each(
-                                (v) => this.insertCell().$(v)
-                            ) :
-                            this.insertCell().$(c) :
+                    return is.valid(c) &&
+                        (is.array(c) && !c.each((v) => this.insertCell().$(v)) || this.outer) ||
+                        (!this.insertCell().$(c) || this.outer) ||
                         this.insertCell();
-
-                    return this;
                 }
             }),
 
@@ -647,26 +588,18 @@ eslint
             $: de._({
                 value (o) {
                     is.pure(o) &&
-                    o.each(
-                        (v, k) => this.options.add(
-                            v.constructor === HTMLOptionElement ?
-                                v :
-                                new Option(v, k)
-                        )
-                    );
+                    o.each((v, k) => this.options.add(is(v) === HTMLOptionElement && v || new Option(v, k)));
 
                     return this;
                 }
             })
         });
-
-        WebSocket.__({
+        
+        let appSock = {
             say: de._({
                 value (v) {
                     this.send(
-                        is.string(v) ?
-                            v :
-                            v.json
+                        is.string(v) && v || v.json
                     );
 
                     return this;
@@ -678,58 +611,22 @@ eslint
                     return this.on("message", cb);
                 }
             })
-        });
+        };
 
-        RTCDataChannel.__({
-            say: de._({
-                value (v) {
-                    this.send(
-                        is.string(v) ?
-                            v :
-                            v.json
-                    );
+        WebSocket.__(appSock);
+        RTCDataChannel.__(appSock);
 
-                    return this;
-                }
-            }),
+        let Wait = glb.Wait = (s, cb) => {
+            let t = setTimeout(cb, s);
+            
+            return () => clearTimeout(t);
+        };
 
-            hear: de._({
-                value (cb) {
-                    return this.on("message", cb);
-                }
-            })
-        });
-
-        let Wait = glb.Wait = function Wait (s) {
-            this._({
-                timer: null,
-                s
-            });
-        }._({
-            _ (cb, args) {
-                this.timer = is.function(cb) ?
-                    setTimeout(() => {
-                        this._();
-                        cb(args);
-                    }, this.s) :
-                    clearTimeout(this.timer);
-            }
-        });
-
-        let Each = glb.Each = function Each (s) {
-            this._({
-                timer: null,
-                s
-            });
-        }._({
-            _ (cb, args) {
-                this.timer = is.function(cb) ?
-                        setInterval(() => {
-                        cb(args);
-                    }, this.s) :
-                    clearInterval(this.timer);
-            }
-        });
+        let Each = glb.Each = (s, cb) => {
+            let t = setInterval(cb, s);
+            
+            return () => clearInterval(t);
+        };
 
         Window.__({
             article: de._({
@@ -951,11 +848,8 @@ eslint
 
         let XPath = glb.XPath = function XPath (uri, ssl) {
             this._(
-                iframe.$(
-                    ssl ?
-                        "https://" + uri :
-                        "http://" + uri
-                ).wear({
+                iframe.$(ssl && "https://" + uri || "http://" + uri)
+                .wear({
                     width: "1px",
                     height: "1px",
                     position: "absolute",
@@ -972,11 +866,7 @@ eslint
         let Socket = glb.Socket = function Socket (uri, ssl) {
             new XPath(uri, ssl);
 
-            return new WebSocket(
-                ssl ?
-                    "wss://" + uri :
-                    "ws://" + uri
-            );
+            return new WebSocket(ssl && "wss://" + uri || "ws://" + uri);
         };
 
         let PvP = glb.PvP = function PvP (l, uri, ssl) {
@@ -995,9 +885,7 @@ eslint
         }.__({
             message: de.writable({
                 value (e) {
-                    e.data.json ?
-                    this.take(e.data.json) :
-                    this.open();
+                    e.data.json && this.take(e.data.json) || this.open();
                 }
             }),
 
