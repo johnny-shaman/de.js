@@ -120,7 +120,7 @@ eslint
             value (p) {
                 switch (is(p)) {
                     case Object: {
-                        this.prototype = is.self(p) && Object.create(p) || Object.create(Object.prototype, p.de);
+                        this.prototype = is.self(p) && Object.create(p) || this.prototype._(p);
                         break;
                     }
 
