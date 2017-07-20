@@ -299,6 +299,7 @@ let $ = glb.$ = glb.$ || {};
 
         toArray: de._({
             get () {
+                is.valid(this.length) || this._({length: this.keys.length});
                 return Array.from(this);
             }
         }),
@@ -451,7 +452,9 @@ let $ = glb.$ = glb.$ || {};
                     switch (is(t)) {
                         case Object: return (ks) => this.$(ks.map((v) => t[v]));
                         case Array || NodeList || HTMLCollection: {
-                            this.append(t);
+                            let ve = document.createDocumentFragment();
+                            t.each((v) => ve.$(v));
+                            this.append(ve);
                             break;
                         }
 
