@@ -106,7 +106,7 @@ eslint
                 return de.fine(
                     this.prototype,
                     {constructor: de.writable({value: this})}
-                );
+                ) && this;
             }
         }),
 
