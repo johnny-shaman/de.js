@@ -59,12 +59,18 @@ eslint
     });
 
     let de = glb.de = Object.create(null, {
-        configurable: {value: (o) => Object.assign({configurable: true}, o)},
+        configurable: {
+            value: (o) => Object.assign({
+                configurable: true
+            }, o)
+        },
 
-        enumerable: {value: (o) => Object.assign({
-            configurable: true,
-            enumerable: true
-        }, o)},
+        enumerable: {
+            value: (o) => Object.assign({
+                configurable: true,
+                enumerable: true
+            }, o)
+        },
 
         writable: {
             value: (o) => Object.assign({
@@ -98,20 +104,16 @@ eslint
     de.fine(Function.prototype, {
         keep: de._({
             get () {
-                de.fine(
+                return de.fine(
                     this.prototype,
                     {constructor: de.writable({value: this})}
                 );
-
-                return this;
             }
         }),
 
         __: de._({
             value (p) {
-                de.fine(this.prototype, p);
-
-                return this.keep;
+                return de.fine(this.prototype, p) && this.keep;
             }
         }),
 
@@ -120,18 +122,16 @@ eslint
                 switch (is(p)) {
                     case Object: {
                         this.prototype = is.self(p) && Object.create(p) || Object.create(Object.prototype, p.de);
-
-                        return this.keep;
+                        break;
                     }
 
                     case Function: {
                         this.prototype = Object.create(p.prototype);
-
-                        return this.keep;
+                        break;
                     }
-
-                    default: return this.keep;
+                    default: break;
                 }
+                return this.keep;
             }
         }),
 
@@ -163,10 +163,8 @@ eslint
 
         _: de._({
             value (o) {
-                this.$ = is.held(o)(EventTarget) && o;
-                is.pure(o) && Object.assign(this, o);
-
-                return this;
+                this.$ = is.held(o)(EventTarget) && o || false;
+                return is.pure(o) && Object.assign(this, o) || this;
             }
         }),
 
@@ -191,7 +189,6 @@ eslint
         on: de._({
             value (e) {
                 is.array(e) && e.each((v) => this.on(v)) || this.$ && this.$.on(e, this);
-
                 return this;
             }
         }),
@@ -199,7 +196,6 @@ eslint
         off: de._({
             value (e) {
                 is.array(e) && e.each((v) => this.off(v)) || this.$ && this.$.off(e, this);
-
                 return this;
             }
         }),
@@ -207,7 +203,6 @@ eslint
         each: de._({
             value (f) {
                 this.keys.forEach((k) => f(this[k], k));
-
                 return this;
             }
         }),
@@ -282,7 +277,7 @@ eslint
                 this.stop && e.stopPropagation();
                 this.oppo && e.preventDefault();
                 is.object(this[e.type]) && this[e.type][
-                    is.string(e._.type) && e._.type || this[e.type]["type"]
+                    is.string(e._.type) && e._.type || this[e.type].type
                 ].call(this, e);
                 is.function(this[e.type]) && this[e.type](e);
             }
@@ -300,7 +295,6 @@ eslint
         each: de._({
             value (f) {
                 this.forEach(f);
-
                 return this;
             }
         }),
@@ -308,7 +302,6 @@ eslint
         pull: de._({
             value (v) {
                 this.unshift(v);
-
                 return this;
             }
         }),
@@ -318,7 +311,6 @@ eslint
         push: de._({
             value (v) {
                 this[this.length] = v;
-
                 return this;
             }
         })
@@ -346,20 +338,20 @@ eslint
                                 v.charCodeAt(0) - 0xFEE0
                             )
                         );
-
-                        return res;
+                        break;
                     }
+
                     case 2: {
                         this.each(
                             (v) => res += String.fromCharCode(
                                 v.charCodeAt(0) + 0xFEE0
                             )
                         );
-
-                        return res;
+                        break;
                     }
-                    default: return res;
+                    default: return this;
                 }
+                return res;
             }
         })
     });
@@ -386,7 +378,6 @@ eslint
 
                 set (v) {
                     this.data = v.json;
-
                     return true;
                 }
             })
@@ -396,7 +387,6 @@ eslint
             on: de._({
                 value (e, cb, p) {
                     this.addEventListener(e, cb, p);
-
                     return this;
                 }
             }),
@@ -404,8 +394,22 @@ eslint
             off: de._({
                 value (e, cb, p) {
                     this.removeEventListener(e, cb, p);
-
                     return this;
+                }
+            }),
+
+            say: de._({
+                value (v) {
+                    is.function(this.send) && this.send(
+                        is.string(v) && v || v.json
+                    );
+                    return this;
+                }
+            }),
+
+            hear: de._({
+                value (cb) {
+                    return this.on("message", cb);
                 }
             })
         });
@@ -438,7 +442,6 @@ eslint
             out: de._({
                 value (t) {
                     let outer = this.outer;
-
                     return is.valid(t) && (!this.removeChild(t) || this) || !outer.removeChild(this) || outer;
                 }
             }),
@@ -447,7 +450,6 @@ eslint
                 value (a) {
                     is.object(a) &&
                     a.each((v, k) => is.valid(v) && !this.setAttribute(k, v) || this.removeAttribute(k));
-
                     return is.string(a) && this.getAttribute(a) || this;
                 }
             }),
@@ -520,12 +522,11 @@ eslint
                         case "option": this.outer.value = v; break;
                         case "input" || "select": switch (this.type) {
                             case "checkbox" || "radio": this.checked = v; break;
-                            default: this.value = v; break;
+                            default: this.value = v;
                         } break;
                         case "img" || "iframe": this.src = v; break;
                         default: this.innerText = v;
                     }
-
                     return true;
                 }
             }),
@@ -534,7 +535,6 @@ eslint
                 value (s) {
                     is.object(s) && this.style._(s);
                     this.style.cssText = is.string(s) && s || this.style.cssText;
-
                     return this;
                 }
             })
@@ -589,42 +589,18 @@ eslint
                 value (o) {
                     is.pure(o) &&
                     o.each((v, k) => this.options.add(is(v) === HTMLOptionElement && v || new Option(v, k)));
-
                     return this;
                 }
             })
         });
-        
-        let appSock = {
-            say: de._({
-                value (v) {
-                    this.send(
-                        is.string(v) && v || v.json
-                    );
-
-                    return this;
-                }
-            }),
-
-            hear: de._({
-                value (cb) {
-                    return this.on("message", cb);
-                }
-            })
-        };
-
-        WebSocket.__(appSock);
-        RTCDataChannel.__(appSock);
 
         let Wait = glb.Wait = (s, cb) => {
             let t = setTimeout(cb, s);
-            
             return () => clearTimeout(t);
         };
 
         let Each = glb.Each = (s, cb) => {
             let t = setInterval(cb, s);
-            
             return () => clearInterval(t);
         };
 
@@ -846,7 +822,7 @@ eslint
             })
         });
 
-        let XPath = glb.XPath = function XPath (uri, ssl) {
+        let XPath = function XPath (uri, ssl) {
             this._(
                 iframe.$(ssl && "https://" + uri || "http://" + uri)
                 .wear({
@@ -865,7 +841,6 @@ eslint
 
         let Socket = glb.Socket = function Socket (uri, ssl) {
             new XPath(uri, ssl);
-
             return new WebSocket(ssl && "wss://" + uri || "ws://" + uri);
         };
 
@@ -904,7 +879,6 @@ eslint
             open: de._({
                 value () {
                     this.talk = this.$.createDataChannel("talk");
-
                     return this.$.createOffer().then(
                         (v) => this.local = v, (e) => e
                     );
@@ -914,7 +888,6 @@ eslint
             take: de._({
                 value (signal) {
                     this.remote = signal;
-
                     return this.$.createAnswer().then(
                         (v) => this.local = v, (e) => e
                     );
@@ -924,7 +897,6 @@ eslint
             local: de._({
                 set (v) {
                     this.$.setLocalDescription(new RTCSessionDescription(v));
-
                     return true;
                 },
 
@@ -936,7 +908,6 @@ eslint
             remote: de._({
                 set (v) {
                     this.$.setRemoteDescription(new RTCSessionDescription(v));
-
                     return true;
                 },
 
