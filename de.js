@@ -15,12 +15,11 @@ global
     Option,
     RTCPeerConnection,
     RTCSessionDescription,
-    RTCDataChannel,
+    HTMLUListElement,
+    HTMLOListElement,
     Window,
-    select,
-    label,
-    input,
-    iframe
+    iframe,
+    li
 */
 /*
 eslint
@@ -421,7 +420,6 @@ eslint
                         case Object: return (ks) => this.$(ks.map((v) => t[v]));
                         case Array || NodeList || HTMLCollection: {
                             let ve = document.createDocumentFragment();
-
                             t.each((v) => ve.$(v));
                             this.append(ve);
                             break;
@@ -590,6 +588,54 @@ eslint
                     is.pure(o) &&
                     o.each((v, k) => this.options.add(is(v) === HTMLOptionElement && v || new Option(v, k)));
                     return this;
+                }
+            })
+        });
+
+        HTMLUListElement.__({
+            $: de._({
+                value (t) {
+                    switch (is(t)) {
+                        case Object: return (ks) => this.$(ks.map((v) => t[v]));
+                        case Array || NodeList || HTMLCollection: {
+                            let ve = document.createDocumentFragment();
+                            t.each((v) => ve.$(li.$(v)));
+                            this.append(ve);
+                            break;
+                        }
+                        default: Element.prototype.$.call(this, t);
+                    }
+                    return this;
+                }
+            }),
+
+            li: de._({
+                get () {
+                    return this.children;
+                }
+            })
+        });
+
+        HTMLOListElement.__({
+            $: de._({
+                value (t) {
+                    switch (is(t)) {
+                        case Object: return (ks) => this.$(ks.map((v) => t[v]));
+                        case Array || NodeList || HTMLCollection: {
+                            let ve = document.createDocumentFragment();
+                            t.each((v) => ve.$(li.$(v)));
+                            this.append(ve);
+                            break;
+                        }
+                        default: Element.prototype.$.call(this, t);
+                    }
+                    return this;
+                }
+            }),
+
+            li: de._({
+                get () {
+                    return this.children;
                 }
             })
         });
