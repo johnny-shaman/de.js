@@ -8,6 +8,8 @@ global
     Location,
     location,
     Element,
+    Document,
+    DocumentFragment,
     HTMLTableElement,
     HTMLTableRowElement,
     HTMLSelectElement,
@@ -29,7 +31,37 @@ eslint
 ((glb) => {
     "use strict";
 
-    let $ = glb.$ = glb.$ || {};
+    Object.getOwnPropertyDescriptors || Object.defineProperties(Object, {
+        getOwnPropertyDescriptors: {
+            configurable: true,
+            value (o) {
+                let res = {};
+                Object.keys(o).forEach((v) => res[v] = Object.getOwnPropertyDescriptor(o, v));
+                return res;
+            }
+        }
+    });
+
+    [Element.prototype, Document.prototype, DocumentFragment.prototype].forEach((item) => {
+        item.append || Object.defineProperties(item, {
+            append: {
+                configurable: true,
+                writable: true,
+                value: function append() {
+                    var argArr = Array.prototype.slice.call(arguments),
+                    docFrag = document.createDocumentFragment();
+                    
+                    argArr.forEach((argItem) => {
+                        docFrag.appendChild(argItem instanceof Node ? argItem : document.createTextNode(String(argItem)));
+                    });
+                    
+                    this.appendChild(docFrag);
+                }
+            }
+        });
+    });
+
+let $ = glb.$ = glb.$ || {};
 
     let is = glb.is = Object.assign((t) => {
         try {
@@ -419,9 +451,7 @@ eslint
                     switch (is(t)) {
                         case Object: return (ks) => this.$(ks.map((v) => t[v]));
                         case Array || NodeList || HTMLCollection: {
-                            let ve = document.createDocumentFragment();
-                            t.each((v) => ve.$(v));
-                            this.append(ve);
+                            this.append(t);
                             break;
                         }
 
