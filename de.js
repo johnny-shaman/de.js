@@ -61,7 +61,7 @@ eslint
         });
     });
 
-let $ = glb.$ = glb.$ || {};
+    let $ = glb.$ = glb.$ || {};
 
     let is = glb.is = Object.assign((t) => {
         try {
