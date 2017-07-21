@@ -70,7 +70,6 @@ let $ = glb.$ = glb.$ || {};
             return t;
         }
     }, {
-        "able": (t) => (v) => is.function(t) && t(v) || undefined,
         "array": (t) => is(t) === Array,
         "blank": (t) => t === "",
         "boolean": (t) => is(t) === Boolean,
@@ -126,11 +125,20 @@ let $ = glb.$ = glb.$ || {};
 
         fine: {value: Object.defineProperties},
         al: {value: Object.create},
-        alt: {value: (l) => new Array(l).fill(true).map},
-        legate: {value: is.able}
     });
 
     de.fine(de, {_: {value: de.configurable}});
+
+    de.fine((function* () {}).prototype.constructor.prototype, {
+        each: {
+            value (cb) {
+                for (let v of this) {
+                    cb(v);
+                }
+                return this;
+            }
+        }
+    });
 
     de.fine(Function.prototype, {
         keep: de._({
@@ -250,6 +258,12 @@ let $ = glb.$ = glb.$ || {};
             }
         }),
 
+        clone: de._({
+            get () {
+                return this.map((v) => is.pure(v) && v.clone || v);
+            }
+        }),
+
         deal: de._({
             get () {
                 return Object.create(this);
@@ -258,7 +272,7 @@ let $ = glb.$ = glb.$ || {};
 
         mix: de._({
             value (cb) {
-                return de.ep(this.copy)((v, k) => this[k] = cb(v, k));
+                return de.ep(this.clone)((v, k) => this[k] = cb(v, k));
             }
         }),
 
