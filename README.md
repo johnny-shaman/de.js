@@ -1,17 +1,6 @@
 # de.js
 de.js contribute at DataFlow EventDriven Multi Paradime Javascript thinking about Functional Programing.
 
-## What's a fact of javascript.
-### Surely you think 
-- long long property name...
-- OOP ? But ! this isn't this !!!
-- promise ? generator ? It's Juicy ?
-- Where is myself ? Who is me ?
-- Understand !
--- "this" is a bad!
--- "new" is a bad!
--- "OOP" is a bad...
-
 ## de.js is very friendly of OOP
 ### Sample code
 ~~~javascript
