@@ -141,7 +141,7 @@ eslint
 
         _: de._({
             get () {
-                
+                return this.next;
             }
         })
     });
@@ -426,11 +426,6 @@ eslint
                 get () {
                     return this.data && this.data.json ||
                     is.held(this.target)(Element) && this.target.now;
-                },
-
-                set (v) {
-                    this.target.now = v;
-                    return true;
                 }
             })
         });
