@@ -424,8 +424,7 @@ eslint
 
             _: de._({
                 get () {
-                    return this.data && this.data.json ||
-                    is.held(this.target)(Element) && this.target.now;
+                    return this.data && this.data.json;
                 }
             })
         });
