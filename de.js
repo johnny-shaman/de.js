@@ -130,14 +130,20 @@ eslint
     de.fine(de, {_: {value: de.configurable}});
 
     de.fine((function* () {}).prototype.constructor.prototype, {
-        each: {
+        each: de._({
             value (cb) {
                 for (let v of this) {
                     cb(v);
                 }
                 return this;
             }
-        }
+        }),
+
+        _: de._({
+            get () {
+                
+            }
+        })
     });
 
     de.fine(Function.prototype, {
@@ -270,15 +276,15 @@ eslint
             }
         }),
 
-        mix: de._({
-            value (cb) {
-                return de.ep(this.clone)((v, k) => this[k] = cb(v, k));
-            }
-        }),
-
         map: de._({
             value (cb) {
                 return this.copy.each((v, k) => this[k] = cb(v, k));
+            }
+        }),
+
+        mix: de._({
+            value (cb) {
+                return de.ep(this.clone)((v, k) => this[k] = cb(v, k));
             }
         }),
 
@@ -406,7 +412,7 @@ eslint
         Object.assign($, {
             html: document.documentElement,
             head: document.head,
-            body: document.body
+            body: document.body,
         });
 
         Event.__({
@@ -423,7 +429,7 @@ eslint
                 },
 
                 set (v) {
-                    this.data = v.json;
+                    this.target.now = v;
                     return true;
                 }
             })
@@ -549,6 +555,26 @@ eslint
         });
 
         Element.__({
+            ["#"]: de._({
+                get () {
+                    return this.id;
+                },
+
+                set (v) {
+                    this.id = v;
+                }
+            }),
+
+            ["."]: de._({
+                get () {
+                    return this.class;
+                },
+
+                set (v) {
+                    this.class = v;
+                }
+            }),
+
             now: de._({
                 get () {
                     switch (this.tagName) {
@@ -581,6 +607,12 @@ eslint
                     is.object(s) && this.style._(s);
                     this.style.cssText = is.string(s) && s || this.style.cssText;
                     return this;
+                }
+            }),
+
+            css: de._({
+                get () {
+                    return this.wear;
                 }
             })
         });
@@ -915,7 +947,7 @@ eslint
             })
         });
 
-        let XPath = function XPath (uri, ssl) {
+        let XDing = function (uri, ssl) {
             this._(
                 iframe.$(ssl && "https://" + uri || "http://" + uri)
                 .wear({
@@ -932,12 +964,12 @@ eslint
             }
         });
 
-        let Socket = glb.Socket = function Socket (uri, ssl) {
-            new XPath(uri, ssl);
+        let Socket = glb.Socket = function (uri, ssl) {
+            new XDing(uri, ssl);
             return new WebSocket(ssl && "wss://" + uri || "ws://" + uri);
         };
 
-        let PvP = glb.PvP = function PvP (l, uri, ssl) {
+        let PvP = glb.PvP = function (l, uri, ssl) {
             this
             ._({
                 talk: null,
