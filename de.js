@@ -31,37 +31,7 @@ eslint
 ((glb) => {
     "use strict";
 
-    Object.getOwnPropertyDescriptors || Object.defineProperties(Object, {
-        getOwnPropertyDescriptors: {
-            configurable: true,
-            value (o) {
-                let res = {};
-                Object.keys(o).forEach((v) => res[v] = Object.getOwnPropertyDescriptor(o, v));
-                return res;
-            }
-        }
-    });
-
-    [Element.prototype, Document.prototype, DocumentFragment.prototype].forEach((item) => {
-        item.append || Object.defineProperties(item, {
-            append: {
-                configurable: true,
-                writable: true,
-                value: function append() {
-                    var argArr = Array.prototype.slice.call(arguments),
-                    docFrag = document.createDocumentFragment();
-                    
-                    argArr.forEach((argItem) => {
-                        docFrag.appendChild(argItem instanceof Node ? argItem : document.createTextNode(String(argItem)));
-                    });
-                    
-                    this.appendChild(docFrag);
-                }
-            }
-        });
-    });
-
-    let $ = glb.$ = glb.$ || {};
+    let $ = glb.$ = glb.$ || glb;
 
     let is = glb.is = Object.assign((t) => {
         try {
@@ -75,6 +45,8 @@ eslint
         "boolean": (t) => is(t) === Boolean,
         "defined": (t) => is(t) !== undefined,
         "function": (t) => is(t) === Function,
+        "generator": (t) => is(t) === is(function* () {}),
+        "iterable": (t) => is(t) === is((function* () {})()),
         "held": (t) => (p) => t instanceof p,
         "nan": (t) => is.number(t) && isNaN(t),
         "null": (t) => is(t) === null,
@@ -87,6 +59,9 @@ eslint
         "self": (t) => is(t).prototype === t,
         "symbol": (t) => is(t) === Symbol
     });
+
+    let gt = is(function* () {});
+    let ir = is((function* () {})());
 
     let de = glb.de = Object.create(null, {
         configurable: {
@@ -124,12 +99,12 @@ eslint
         },
 
         fine: {value: Object.defineProperties},
-        al: {value: Object.create},
+        al: {value: Object.create}
     });
 
     de.fine(de, {_: {value: de.configurable}});
 
-    de.fine((function* () {}).prototype.constructor.prototype, {
+    de.fine(ir.prototype, {
         each: de._({
             value (cb) {
                 for (let v of this) {
@@ -266,7 +241,7 @@ eslint
 
         clone: de._({
             get () {
-                return this.map((v) => is.pure(v) && v.clone || v);
+                return this.map((v) => is.pure(v) || is.held(v)(Node) && v.clone || v);
             }
         }),
 
@@ -369,6 +344,12 @@ eslint
     });
 
     String.__({
+        id: de._({
+            get () {
+                return this.indexOf;
+            }
+        }),
+
         json: de._({
             get () {
                 try {
@@ -409,12 +390,6 @@ eslint
     });
 
     glb === window && (() => {
-        Object.assign($, {
-            html: document.documentElement,
-            head: document.head,
-            body: document.body,
-        });
-
         Event.__({
             $: de._({
                 get () {
@@ -464,23 +439,21 @@ eslint
             $: de._({
                 value (t) {
                     switch (is(t)) {
-                        case Object: return (ks) => this.$(ks.map((v) => t[v]));
-                        case Array || NodeList || HTMLCollection: {
+                        case Object: return this.$(t.$);
+                        case Array || NodeList || HTMLCollection || ir: {
                             let ve = document.createDocumentFragment();
                             t.each((v) => ve.$(v));
-                            this.append(ve);
-                            break;
+                            return this.$(ve);
                         }
 
                         case null || undefined: return this.outer.out(this);
                         case String || Number || Boolean: {
                             is.defined(this.src) && this._({src: String(t)}) || this.append(t);
-                            break;
+                            return this;
                         }
 
-                        default: this.append(t);
+                        default: return this.append(t) || this;
                     }
-                    return this;
                 }
             }),
 
@@ -508,6 +481,26 @@ eslint
             outer: de._({
                 get () {
                     return this.parentNode;
+                }
+            }),
+
+            clone: de._({
+                get () {
+                    return this.cloneNode();
+                }
+            }),
+
+            wear: de._({
+                value (s) {
+                    is.object(s) && this.style._(s);
+                    this.style.cssText = is.string(s) && s || this.style.cssText;
+                    return this;
+                }
+            }),
+
+            css: de._({
+                get () {
+                    return this.wear;
                 }
             })
         });
@@ -545,6 +538,18 @@ eslint
                 get () {
                     return decodeURIComponent(location.search.slice(1)).json;
                 }
+            }),
+
+            port: de._({
+                get () {
+                    return location.host.slice(location.host.id(":") + 1);
+                }
+            }),
+
+            https: de._({
+                get () {
+                    return location.protocol === "https:";
+                }
             })
         });
 
@@ -556,6 +561,7 @@ eslint
 
                 set (v) {
                     this.id = v;
+                    return true;
                 }
             }),
 
@@ -566,47 +572,7 @@ eslint
 
                 set (v) {
                     this.class = v;
-                }
-            }),
-
-            now: de._({
-                get () {
-                    switch (this.tagName) {
-                        case "option": return this.outer.value;
-                        case "input" || "select": switch (this.type) {
-                            case "checkbox" || "radio": return this.checked;
-                            default: return this.value;
-                        }
-                        case "img" || "iframe": return this.src;
-                        default: return this.innerText;
-                    }
-                },
-
-                set (v) {
-                    switch (this.tagName) {
-                        case "option": this.outer.value = v; break;
-                        case "input" || "select": switch (this.type) {
-                            case "checkbox" || "radio": this.checked = v; break;
-                            default: this.value = v;
-                        } break;
-                        case "img" || "iframe": this.src = v; break;
-                        default: this.innerText = v;
-                    }
                     return true;
-                }
-            }),
-
-            wear: de._({
-                value (s) {
-                    is.object(s) && this.style._(s);
-                    this.style.cssText = is.string(s) && s || this.style.cssText;
-                    return this;
-                }
-            }),
-
-            css: de._({
-                get () {
-                    return this.wear;
                 }
             })
         });
@@ -669,7 +635,6 @@ eslint
             $: de._({
                 value (t) {
                     switch (is(t)) {
-                        case Object: return (ks) => this.$(ks.map((v) => t[v]));
                         case Array || NodeList || HTMLCollection: {
                             let ve = document.createDocumentFragment();
                             t.each((v) => ve.$(li.$(v)));
@@ -693,7 +658,6 @@ eslint
             $: de._({
                 value (t) {
                     switch (is(t)) {
-                        case Object: return (ks) => this.$(ks.map((v) => t[v]));
                         case Array || NodeList || HTMLCollection: {
                             let ve = document.createDocumentFragment();
                             t.each((v) => ve.$(li.$(v)));
@@ -724,225 +688,54 @@ eslint
         };
 
         Window.__({
-            article: de._({
-                get () {
-                    return document.createElement("article");
-                }
-            }),
-
-            div: de._({
-                get () {
-                    return document.createElement("div");
-                }
-            }),
-
-            section: de._({
-                get () {
-                    return document.createElement("section");
-                }
-            }),
-
-            nav: de._({
-                get () {
-                    return document.createElement("nav");
-                }
-            }),
-
-            aside: de._({
-                get () {
-                    return document.createElement("aside");
-                }
-            }),
-
-            header: de._({
-                get () {
-                    return document.createElement("header");
-                }
-            }),
-
-            footer: de._({
-                get () {
-                    return document.createElement("footer");
-                }
-            }),
-
-            h1: de._({
-                get () {
-                    return document.createElement("h1");
-                }
-            }),
-
-            h2: de._({
-                get () {
-                    return document.createElement("h2");
-                }
-            }),
-
-            h3: de._({
-                get () {
-                    return document.createElement("h3");
-                }
-            }),
-
-            h4: de._({
-                get () {
-                    return document.createElement("h4");
-                }
-            }),
-
-            h5: de._({
-                get () {
-                    return document.createElement("h5");
-                }
-            }),
-
-            h6: de._({
-                get () {
-                    return document.createElement("h6");
-                }
-            }),
-
-            p: de._({
-                get () {
-                    return document.createElement("p");
-                }
-            }),
-
-            br: de._({
-                get () {
-                    return document.createElement("br");
-                }
-            }),
-
-            table: de._({
-                get () {
-                    return document.createElement("table");
-                }
-            }),
-
-            ul: de._({
-                get () {
-                    return document.createElement("ul");
-                }
-            }),
-
-            ol: de._({
-                get () {
-                    return document.createElement("ol");
-                }
-            }),
-
-            li: de._({
-                get () {
-                    return document.createElement("li");
-                }
-            }),
-
-            dl: de._({
-                get () {
-                    return document.createElement("dl");
-                }
-            }),
-
-            dt: de._({
-                get () {
-                    return document.createElement("dt");
-                }
-            }),
-
-            dd: de._({
-                get () {
-                    return document.createElement("dd");
-                }
-            }),
-
-            form: de._({
-                get () {
-                    return document.createElement("form");
-                }
-            }),
-
-            label: de._({
-                get () {
-                    return document.createElement("label");
-                }
-            }),
-
-            input: de._({
-                get () {
-                    return document.createElement("input");
-                }
-            }),
-
-            textarea: de._({
-                get () {
-                    return document.createElement("textarea");
-                }
-            }),
-
-            map: de._({
-                get () {
-                    return document.createElement("map");
-                }
-            }),
-
-            area: de._({
-                get () {
-                    return document.createElement("area");
-                }
-            }),
-
-            img: de._({
-                get () {
-                    return document.createElement("img");
-                }
-            }),
-
-            button: de._({
-                get () {
-                    return document.createElement("button");
-                }
-            }),
-
-            iframe: de._({
-                get () {
-                    return document.createElement("iframe");
-                }
-            }),
-
-            select: de._({
-                get () {
-                    return document.createElement("select");
-                }
-            }),
-
-            a: de._({
-                get () {
-                    return document.createElement("a");
-                }
-            }),
-
-            em: de._({
-                get () {
-                    return document.createElement("em");
-                }
-            }),
-
-            strong: de._({
-                get () {
-                    return document.createElement("strong");
-                }
-            }),
-
-            span: de._({
-                get () {
-                    return document.createElement("span");
-                }
-            })
+            html: de._({get: () => document.documentElement}),
+            head: de._({get: () => document.head}),
+            body: de._({get: () => document.body}),
+            here: de._({get: () => location.hostname}),
+            port: de._({get: () => location.port}),
+            https: de._({get: () => location.https}),
+            path: de._({get: () => location.pathname}),
+            article: de._({get: () => document.createElement("article")}),
+            div: de._({get: () => document.createElement("div")}),
+            section: de._({get: () => document.createElement("section")}),
+            nav: de._({get: () => document.createElement("nav")}),
+            aside: de._({get: () => document.createElement("aside")}),
+            header: de._({get: () => document.createElement("header")}),
+            footer: de._({get: () => document.createElement("footer")}),
+            h1: de._({get: () => document.createElement("h1")}),
+            h2: de._({get: () => document.createElement("h2")}),
+            h3: de._({get: () => document.createElement("h3")}),
+            h4: de._({get: () => document.createElement("h4")}),
+            h5: de._({get: () => document.createElement("h5")}),
+            h6: de._({get: () => document.createElement("h6")}),
+            p: de._({get: () => document.createElement("p")}),
+            br: de._({get: () => document.createElement("br")}),
+            table: de._({get: () => document.createElement("table")}),
+            ul: de._({get: () => document.createElement("ul")}),
+            ol: de._({get: () => document.createElement("ol")}),
+            li: de._({get: () => document.createElement("li")}),
+            dl: de._({get: () => document.createElement("dl")}),
+            dt: de._({get: () => document.createElement("dt")}),
+            dd: de._({get: () => document.createElement("dd")}),
+            form: de._({get: () => document.createElement("form")}),
+            label: de._({get: () => document.createElement("label")}),
+            input: de._({get: () => document.createElement("input")}),
+            textarea: de._({get: () => document.createElement("textarea")}),
+            map: de._({get: () => document.createElement("map")}),
+            area: de._({get: () => document.createElement("area")}),
+            img: de._({get: () => document.createElement("img")}),
+            button: de._({get: () => document.createElement("button")}),
+            iframe: de._({get: () => document.createElement("iframe")}),
+            select: de._({get: () => document.createElement("select")}),
+            a: de._({get: () => document.createElement("a")}),
+            em: de._({get: () => document.createElement("em")}),
+            strong: de._({get: () => document.createElement("strong")}),
+            span: de._({get: () => document.createElement("span")})
         });
 
         let XDing = function (uri, ssl) {
-            this._(
+            this
+            ._(
                 iframe.$(ssl && "https://" + uri || "http://" + uri)
                 .wear({
                     width: "1px",
@@ -950,7 +743,8 @@ eslint
                     position: "absolute",
                     top: "-100px;"
                 })
-            ).on("load");
+            )
+            .on("load");
             $.body.$(this.$);
         }._({
             load (e) {
@@ -958,15 +752,26 @@ eslint
             }
         });
 
-        let Socket = glb.Socket = function (uri, ssl) {
-            new XDing(uri, ssl);
+        let Socket = glb.Socket = function (uri = $.here, ssl = $.https) {
+            uri === $.hear || new XDing(uri, ssl);
             return new WebSocket(ssl && "wss://" + uri || "ws://" + uri);
         };
 
-        let PvP = glb.PvP = function (l, uri, ssl) {
+        let PvP = glb.PvP = function (
+            cb,
+            uri,
+            ssl,
+            l = [
+                {url: "stun:stun.l.google.com:19302"},
+                {url: "stun:stun1.l.google.com:19302"},
+                {url: "stun:stun2.l.google.com:19302"},
+                {url: "stun:stun3.l.google.com:19302"},
+                {url: "stun:stun4.l.google.com:19302"}
+            ]
+        ) {
             this
             ._({
-                talk: null,
+                cb,
                 signaling: new Socket(uri, ssl).hear(this)
             })
             ._(
@@ -992,12 +797,16 @@ eslint
             datachannel: de.writable({
                 value (e) {
                     this.talk = e.channel;
+                    this.cb({
+                        $: e.channel,
+                        target: e.channel
+                    });
                 }
             }),
 
             open: de._({
                 value () {
-                    this.talk = this.$.createDataChannel("talk");
+                    this.talk = this.$.createDataChannel("talk").on("open", this.cb);
                     return this.$.createOffer().then(
                         (v) => this.local = v, (e) => e
                     );
