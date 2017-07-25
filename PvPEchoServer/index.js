@@ -10,7 +10,9 @@ var WebSocketServer = require('ws').Server,
 
 
 app.use(cors());
-app.get('/', (req, res) => res.end('200 OK'));
+app.set("view options", {layout: false});
+app.use(express.static(__dirname + '/client'));
+app.get('/', (req, res) => res.render("index.html"));
 
 server = http.createServer(app);
 wss = new WebSocketServer({server : server});
@@ -25,23 +27,25 @@ wss.on('connection', (ws) => {
 
     if (offering.length <= 0) {
         offering.push(ws);
-        ws.send(JSON.stringify(false));
+        ws.say(JSON.stringify(false));
         console.log('offered at ' + new Date().toISOString());
     } else {
         answering.push(ws);
-        ws.send(offering[0].sdp);
+        ws.say(offering[0].sdp);
         console.log('answered at ' + new Date().toISOString());
     }
 
     ws.on('close', () => {
         offering.forEach((conn, i) => {
             if (conn === ws) {
+                console.log("offer is closed");
                 offering.splice(i, 1);
             }
         });
         
         answering.forEach((conn, i) => {
             if (conn === ws) {
+                console.log("answer is closed");
                 answering.splice(i, 1);
             }
         });
