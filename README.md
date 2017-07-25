@@ -20,6 +20,10 @@ let MyButton = function () {
 $.body.$(article.$(new MyButton().$));
 ~~~
 
+You can Connect of webRTC;
+~~~javascript
+let pvp = new PvP((e) => window.talk = e.$);
+~~~
 Let's hack it!
 
 # reference
