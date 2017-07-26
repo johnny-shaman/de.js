@@ -31,8 +31,6 @@ eslint
 ((glb) => {
     "use strict";
 
-    let $ = glb.$ = glb.$ || glb;
-
     let is = glb.is = Object.assign((t) => {
         try {
             return t.constructor;
@@ -390,6 +388,40 @@ eslint
     });
 
     glb === window && (() => {
+        window.$ && Object.assign(window.$, {
+            get html () {
+                return document.documentElement;
+            },
+
+            get head () {
+                return document.head;
+            },
+
+            get body () {
+                return document.body;
+            },
+
+            get here () {
+                return location.hostname;
+            },
+
+            get port () {
+                return location.port;
+            },
+
+            get https () {
+                return location.https;
+            },
+
+            get path () {
+                return location.pathname;
+            }
+        });
+
+        window.$ || window.__({
+            $: de._({get: () => window})
+        });
+
         Event.__({
             $: de._({
                 get () {
@@ -752,7 +784,7 @@ eslint
             }
         });
 
-        let Socket = glb.Socket = function (uri = $.here, ssl = $.https) {
+        let Socket = glb.Socket = function (uri = here, ssl = https) {
             uri === $.hear || new XDing(uri, ssl);
             return new WebSocket(ssl && "wss://" + uri || "ws://" + uri);
         };
