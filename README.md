@@ -20,7 +20,7 @@ let MyButton = function () {
         this.each((v, k) => e.$.outer.$(p.$(k + ": " + v)));
     }
 });
-$.body.$(article.$(new MyButton().$));
+$.body.$(article.$(new MyButton()));
 ~~~
 
 You can Connect of webRTC;
