@@ -8,24 +8,27 @@ global
     Location,
     location,
     Element,
-    Document,
-    DocumentFragment,
     HTMLTableElement,
     HTMLTableRowElement,
     HTMLSelectElement,
     HTMLOptionElement,
+    HTMLInputElement,
+    HTMLTextAreaElement,
+    HTMLUListElement,
+    HTMLOListElement,
     Option,
     RTCPeerConnection,
     RTCSessionDescription,
-    HTMLUListElement,
-    HTMLOListElement,
     Window,
     iframe,
-    li
-*/
-/*
-eslint
-    dot-location: ["error", "property"],
+    li,
+    events,
+
+    {
+        eslint: {
+            dot-location: ["error", "property"]
+        }
+    };
 */
 
 ((glb) => {
@@ -43,8 +46,8 @@ eslint
         "boolean": (t) => is(t) === Boolean,
         "defined": (t) => is(t) !== undefined,
         "function": (t) => is(t) === Function,
-        "generator": (t) => is(t) === is(function* () {}),
-        "iterable": (t) => is(t) === is((function* () {})()),
+        "generator": (t) => is(t) === is(gt),
+        "iterable": (t) => is(t) === is(ir),
         "held": (t) => (p) => t instanceof p,
         "nan": (t) => is.number(t) && isNaN(t),
         "null": (t) => is(t) === null,
@@ -52,14 +55,14 @@ eslint
         "object": (t) => is(t) === Object,
         "pure": (t) => is.object(t) || is.array(t),
         "string": (t) => is(t) === String,
-        "there": (t) => is.valid(t.length) && t.length !== 0 || is.valid(t.keys) && is.there(t.keys),
+        "there": (t) => t.length !== 0,
         "valid": (t) => !is.blank(t) && !is.nan(t) && is(t) !== t,
         "self": (t) => is(t).prototype === t,
         "symbol": (t) => is(t) === Symbol
     });
 
     let gt = is(function* () {});
-    let ir = is((function* () {})());
+    let ir = is(function* () {}());
 
     let de = glb.de = Object.create(null, {
         configurable: {
@@ -97,7 +100,8 @@ eslint
         },
 
         fine: {value: Object.defineProperties},
-        al: {value: Object.create}
+        al: {value: Object.create},
+        tail: {value: Object.getOwnPropertyDescriptors}
     });
 
     de.fine(de, {_: {value: de.configurable}});
@@ -204,6 +208,12 @@ eslint
             }
         }),
 
+        length: de._({
+            get () {
+                return this.keys.length;
+            }
+        }),
+
         on: de._({
             value (e) {
                 is.array(e) && e.each((v) => this.on(v)) || this.$ && this.$.on(e, this);
@@ -226,8 +236,14 @@ eslint
         }),
 
         deep: de._({
+            value (cb) {
+                return this.each((v, k) => is.pure(v) && v.deep(cb) || cb(v, k));
+            }
+        }),
+
+        deal: de._({
             get () {
-                return de.ep(this);
+                return Object.create(this);
             }
         }),
 
@@ -239,25 +255,21 @@ eslint
 
         clone: de._({
             get () {
-                return this.map((v) => is.pure(v) || is.held(v)(Node) && v.clone || v);
-            }
-        }),
-
-        deal: de._({
-            get () {
-                return Object.create(this);
+                return this.map((v) => (is.pure(v) || is.held(v)(Node)) && v.clone || v);
             }
         }),
 
         map: de._({
             value (cb) {
-                return this.copy.each((v, k) => this[k] = cb(v, k));
+                let a = this.copy;
+                return a.each((v, k) => a[k] = cb(v, k));
             }
         }),
 
         mix: de._({
             value (cb) {
-                return de.ep(this.clone)((v, k) => this[k] = cb(v, k));
+                let a = this.clone;
+                return a.map((v, k) => is.pure(v) && v.mix(cb) || cb(v, k));
             }
         }),
 
@@ -416,10 +428,35 @@ eslint
             get path () {
                 return location.pathname;
             }
+        }) || window.__({
+            $: de._({
+                value: ({}).__({
+                    _: de._({value (q) {
+                        document.querySelectorAll(q).length === 1 &&
+                        document.querySelector(q) ||
+                        document.querySelectorAll(q);
+                    }}),
+
+                    html: de._({get: () => document.documentElement}),
+                    head: de._({get: () => document.head}),
+                    body: de._({get: () => document.body}),
+                    here: de._({get: () => location.hostname}),
+                    port: de._({get: () => location.port}),
+                    https: de._({get: () => location.https}),
+                    path: de._({get: () => location.pathname})
+                })
+            })
         });
 
-        window.$ || window.__({
-            $: de._({get: () => window})
+        window._ || window.__({
+            _: Object.create({
+                message (e) {
+                    e._.each((v, k) => is.valid(this[k].message) && this[k].message[e._[k].type](e._[k]));
+                },
+
+                progress (e) {
+                }
+            })
         });
 
         Event.__({
@@ -534,35 +571,45 @@ eslint
                 get () {
                     return this.wear;
                 }
+            }),
+
+            now: de._({
+                get () {
+                    return this.innerText;
+                },
+                set (v) {
+                    this.innerText = v;
+                    return true;
+                }
             })
         });
 
         HTMLCollection.__({
-            id: {
+            id: de._({
                 value (t, s) {
                     return this.toArray.id(t, s);
                 }
-            },
+            }),
 
-            each: {
+            each: de._({
                 value (f) {
                     return this.toArray.each(f);
                 }
-            }
+            })
         });
 
         NodeList.__({
-            id: {
+            id: de._({
                 value (t, s) {
                     return this.toArray.id(t, s);
                 }
-            },
+            }),
 
-            each: {
+            each: de._({
                 value (f) {
                     return this.toArray.each(f);
                 }
-            }
+            })
         });
 
         Location.__({
@@ -660,6 +707,17 @@ eslint
                     o.each((v, k) => this.options.add(is(v) === HTMLOptionElement && v || new Option(v, k)));
                     return this;
                 }
+            }),
+
+            now: de._({
+                get () {
+                    return this.value;
+                },
+
+                set (v) {
+                    this.value = v;
+                    return this;
+                }
             })
         });
 
@@ -709,6 +767,91 @@ eslint
             })
         });
 
+        HTMLInputElement.__({
+            now: de._({
+                get () {
+                    switch (this.type) {
+                        case "checkbox" || "radio": return this.checked;
+                        default: return this.value;
+                    }
+                },
+
+                set (v) {
+                    switch (this.type) {
+                        case "checkbox" || "radio": {
+                            this.checked = v;
+                            break;
+                        }
+
+                        default: return this.value = v;
+                    }
+                    return true;
+                }
+            })
+        });
+
+        HTMLTextAreaElement.__({
+            now: de._({
+                get () {
+                    return this.value;
+                },
+
+                set (v) {
+                    this.value = v;
+                    return this;
+                }
+            })
+        });
+
+        XMLHttpRequest.__({
+            data: de._({
+                get () {
+                    return this.response;
+                }
+            }),
+
+            
+
+            say: de._({
+                value (o) {
+                    this.open(
+                        o.method || "GET",
+                        o.url || "",
+                        true,
+                        o.id || undefined,
+                        o.pass || undefined
+                    );
+                    o.header && this.header(o.header);
+                    this.withCredentials = o.credential || false;
+                    this.send(o.data || null);
+                    return this;
+                }
+            }),
+
+            header: de._({
+                value (v) {
+                    is.object(v) && v.each((v, k) => this.setRequestHeader(k, v));
+                    return this;
+                }
+            }),
+
+            sayType: de._({
+                value (type, cs = "utf-8") {
+                    return this.header({"Content-Type": type + "; charset=" + cs});
+                }
+            }),
+
+            connect: de._({
+                value (o) {
+                    return this.say(o._({
+                        header: {
+                            "Content-Type": "text/stream; charset=utf-8"
+                        }
+                    }));
+                }
+            })
+        });
+
         let Wait = glb.Wait = (s, cb) => {
             let t = setTimeout(cb, s);
             return () => clearTimeout(t);
@@ -720,13 +863,6 @@ eslint
         };
 
         Window.__({
-            html: de._({get: () => document.documentElement}),
-            head: de._({get: () => document.head}),
-            body: de._({get: () => document.body}),
-            here: de._({get: () => location.hostname}),
-            port: de._({get: () => location.port}),
-            https: de._({get: () => location.https}),
-            path: de._({get: () => location.pathname}),
             article: de._({get: () => document.createElement("article")}),
             div: de._({get: () => document.createElement("div")}),
             section: de._({get: () => document.createElement("section")}),
@@ -752,11 +888,14 @@ eslint
             form: de._({get: () => document.createElement("form")}),
             label: de._({get: () => document.createElement("label")}),
             input: de._({get: () => document.createElement("input")}),
+            checkbox: de._({get: () => window.input._({type: "checkbox"})}),
+            radio: de._({get: () => window.input._({type: "radio"})}),
+            text: de._({get: () => window.input._({type: "text"})}),
             textarea: de._({get: () => document.createElement("textarea")}),
-            map: de._({get: () => document.createElement("map")}),
-            area: de._({get: () => document.createElement("area")}),
-            img: de._({get: () => document.createElement("img")}),
             button: de._({get: () => document.createElement("button")}),
+            img: de._({get: () => document.createElement("img")}),
+            area: de._({get: () => document.createElement("area")}),
+            map: de._({get: () => document.createElement("map")}),
             iframe: de._({get: () => document.createElement("iframe")}),
             select: de._({get: () => document.createElement("select")}),
             a: de._({get: () => document.createElement("a")}),
@@ -765,7 +904,7 @@ eslint
             span: de._({get: () => document.createElement("span")})
         });
 
-        let XDing = function (uri, ssl) {
+        let XD = function (uri, ssl) {
             this
             ._(
                 iframe.$(ssl && "https://" + uri || "http://" + uri)
@@ -784,97 +923,9 @@ eslint
             }
         });
 
-        let Socket = glb.Socket = function (uri = here, ssl = https) {
-            uri === $.hear || new XDing(uri, ssl);
+        let Socket = glb.Socket = function (uri = $.here, ssl = $.https) {
+            uri === $.hear || new XD(uri, ssl);
             return new WebSocket(ssl && "wss://" + uri || "ws://" + uri);
         };
-
-        let PvP = glb.PvP = function (
-            cb,
-            uri,
-            ssl,
-            l = [
-                {url: "stun:stun.l.google.com:19302"},
-                {url: "stun:stun1.l.google.com:19302"},
-                {url: "stun:stun2.l.google.com:19302"},
-                {url: "stun:stun3.l.google.com:19302"},
-                {url: "stun:stun4.l.google.com:19302"}
-            ]
-        ) {
-            this
-            ._({
-                cb,
-                signaling: new Socket(uri, ssl).hear(this)
-            })
-            ._(
-                new RTCPeerConnection({iceServers: l})
-            )
-            .on([
-                "icecandidate",
-                "datachannel"
-            ]);
-        }.__({
-            message: de.writable({
-                value (e) {
-                    e.data.json && this.take(e.data.json) || this.open();
-                }
-            }),
-
-            icecandidate: de.writable({
-                value (e) {
-                    return e.candidate && this.signaling.send(this.local.json);
-                }
-            }),
-
-            datachannel: de.writable({
-                value (e) {
-                    this.talk = e.channel;
-                    this.cb({
-                        $: e.channel,
-                        target: e.channel
-                    });
-                }
-            }),
-
-            open: de._({
-                value () {
-                    this.talk = this.$.createDataChannel("talk").on("open", this.cb);
-                    return this.$.createOffer().then(
-                        (v) => this.local = v, (e) => e
-                    );
-                }
-            }),
-
-            take: de._({
-                value (signal) {
-                    this.remote = signal;
-                    return this.$.createAnswer().then(
-                        (v) => this.local = v, (e) => e
-                    );
-                }
-            }),
-
-            local: de._({
-                set (v) {
-                    this.$.setLocalDescription(new RTCSessionDescription(v));
-                    return true;
-                },
-
-                get () {
-                    return this.$.localDescription;
-                }
-            }),
-
-            remote: de._({
-                set (v) {
-                    this.$.setRemoteDescription(new RTCSessionDescription(v));
-                    return true;
-                },
-
-                get () {
-                    return this.$.remoteDescription;
-                }
-            })
-        });
     })();
 })(window || process);
