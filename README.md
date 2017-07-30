@@ -33,5 +33,4 @@ Let's hack it!
 https://github.com/johnny-shaman/de.js/wiki
 
 # Lisence
-CC by
-https://creativecommons.org/licenses/by/4.0/
+MIT
