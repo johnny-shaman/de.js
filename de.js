@@ -398,70 +398,6 @@ global
     });
 
     glb === window && (() => {
-        window.$ = Object.assign(window.$ && window.$ || ((q) => document.querySelectorAll(q).length === 1 &&
-            document.querySelector(q) ||
-            document.querySelectorAll(q)),
-        {
-            get html () {
-                return document.documentElement;
-            },
-
-            get head () {
-                return document.head;
-            },
-
-            get body () {
-                return document.body;
-            },
-
-            get here () {
-                return location.hostname;
-            },
-
-            get port () {
-                return location.port;
-            },
-
-            get https () {
-                return location.https;
-            },
-
-            get path () {
-                return location.pathname;
-            }
-        });
-
-        window._  = Object.create({
-            on (ee) {
-                is.array(ee) && ee.each((vv) => {
-                    window._.constructor.__({
-                        [vv]: de._({
-                            value (e) {
-                                is.pure(e) && e._.each((v, k) => {
-                                    is.object(this[k][vv]) && this[k][vv][e._[k].type](e._[k]);
-                                    is.function(this[k][vv]) && this[k][vv](e._[k]);
-                                });
-                            }
-                        })
-                    });
-                    this.$.on(vv, window._);
-                });
-
-                is.string(ee) && window._.constructor.__({
-                    [ee]: de._({
-                        value (e) {
-                            is.pure(e) && e._.each((v, k) => {
-                                is.object(this[k][ee]) && this[k][ee][e._[k].type](e._[k]);
-                                is.function(this[k][ee]) && this[k][ee](e._[k]);
-                            });
-                        }
-                    })
-                }) && this.$.on(ee, window._);
-
-                return this;
-            }
-        }, window._ && window._.de || {});
-
         Event.__({
             $: de._({
                 get () {
@@ -861,6 +797,76 @@ global
         };
 
         Window.__({
+            $: de._({
+                value : Object.assign(window.$ && window.$ || ((q) => document.querySelectorAll(q).length === 1 &&
+                    document.querySelector(q) ||
+                    document.querySelectorAll(q)),
+
+                    {
+                        get html () {
+                            return document.documentElement;
+                        },
+            
+                        get head () {
+                            return document.head;
+                        },
+            
+                        get body () {
+                            return document.body;
+                        },
+            
+                        get https () {
+                            return location.https;
+                        },
+            
+                        get here () {
+                            return location.hostname;
+                        },
+            
+                        get port () {
+                            return location.port;
+                        },
+            
+                        get path () {
+                            return location.pathname;
+                        }
+                    }
+                )
+            }),
+
+            _: de._({
+                value: Object.create({
+                    on (ee) {
+                        is.array(ee) && ee.each((vv) => {
+                            window._.constructor.__({
+                                [vv]: de._({
+                                    value (e) {
+                                        is.pure(e) && e._.each((v, k) => {
+                                            is.object(this[k][vv]) && this[k][vv][e._[k].type](e._[k]);
+                                            is.function(this[k][vv]) && this[k][vv](e._[k]);
+                                        });
+                                    }
+                                })
+                            });
+                            this.$.on(vv, window._);
+                        });
+        
+                        is.string(ee) && window._.constructor.__({
+                            [ee]: de._({
+                                value (e) {
+                                    is.pure(e) && e._.each((v, k) => {
+                                        is.object(this[k][ee]) && this[k][ee][e._[k].type](e._[k]);
+                                        is.function(this[k][ee]) && this[k][ee](e._[k]);
+                                    });
+                                }
+                            })
+                        }) && this.$.on(ee, window._);
+        
+                        return this;
+                    }
+                }, window._ && window._.de || {})
+            }),
+
             article: de._({get: () => document.createElement("article")}),
             div: de._({get: () => document.createElement("div")}),
             section: de._({get: () => document.createElement("section")}),
@@ -922,7 +928,7 @@ global
         });
 
         let Socket = glb.Socket = function (uri = $.here, ssl = $.https) {
-            uri === $.hear || new XD(uri, ssl);
+            uri === $.here || new XD(uri, ssl);
             return new WebSocket(ssl && "wss://" + uri || "ws://" + uri);
         };
     })();
