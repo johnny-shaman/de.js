@@ -57,20 +57,22 @@ let PvP = function (
     open: de._({
         value () {
             this.talk = this.$.createDataChannel("talk").on("open", this.cb);
-            return this.$.createOffer().then((v) => this.local = v, (e) => e);
+            this.$.createOffer().then((v) => this.local = v, (e) => e);
         }
     }),
 
     take: de._({
         value (signal) {
             this.remote = signal;
-            return this.$.createAnswer().then((v) => this.local = v, (e) => e);
+            this.$.createAnswer().then((v) => this.local = v, (e) => e);
+            signal = null;
         }
     }),
 
     local: de._({
         set (v) {
             this.$.setLocalDescription(new RTCSessionDescription(v));
+            v = null;
             return true;
         },
 
@@ -82,6 +84,7 @@ let PvP = function (
     remote: de._({
         set (v) {
             this.$.setRemoteDescription(new RTCSessionDescription(v));
+            v = null;
             return true;
         },
 
