@@ -24,16 +24,22 @@ let PvP = function (
         "icecandidate",
         "datachannel"
     ]);
+    cb = null;
+    uri = null;
+    ssl = null;
+    l = null;
 }.__({
     message: de.writable({
         value (e) {
             e.data.json && this.take(e.data.json) || this.open();
+            e = null;
         }
     }),
 
     icecandidate: de.writable({
         value (e) {
-            return e.candidate && this.signaling.send(this.local.json);
+            e.candidate && this.signaling.send(this.local.json);
+            e = null;
         }
     }),
 
@@ -44,24 +50,21 @@ let PvP = function (
                 $: e.channel,
                 target: e.channel
             });
+            e = null;
         }
     }),
 
     open: de._({
         value () {
             this.talk = this.$.createDataChannel("talk").on("open", this.cb);
-            return this.$.createOffer().then(
-                (v) => this.local = v, (e) => e
-            );
+            return this.$.createOffer().then((v) => this.local = v, (e) => e);
         }
     }),
 
     take: de._({
         value (signal) {
             this.remote = signal;
-            return this.$.createAnswer().then(
-                (v) => this.local = v, (e) => e
-            );
+            return this.$.createAnswer().then((v) => this.local = v, (e) => e);
         }
     }),
 
