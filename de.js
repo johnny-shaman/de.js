@@ -400,7 +400,10 @@ global
     });
 
     glb === window && (() => {
-        window.$ && Object.assign(window.$, {
+        window.$ = Object.assign(window.$ && window.$ || ((q) => document.querySelectorAll(q).length === 1 &&
+            document.querySelector(q) ||
+            document.querySelectorAll(q)),
+        {
             get html () {
                 return document.documentElement;
             },
@@ -428,27 +431,9 @@ global
             get path () {
                 return location.pathname;
             }
-        }) || window.__({
-            $: de._({
-                value: ({}).__({
-                    _: de._({value (q) {
-                        document.querySelectorAll(q).length === 1 &&
-                        document.querySelector(q) ||
-                        document.querySelectorAll(q);
-                    }}),
-
-                    html: de._({get: () => document.documentElement}),
-                    head: de._({get: () => document.head}),
-                    body: de._({get: () => document.body}),
-                    here: de._({get: () => location.hostname}),
-                    port: de._({get: () => location.port}),
-                    https: de._({get: () => location.https}),
-                    path: de._({get: () => location.pathname})
-                })
-            })
         });
 
-        window._ && Object.create({
+        window._  = Object.create({
             on (ee) {
                 is.array(ee) && ee.each((vv) => {
                     window._.constructor.__({
@@ -477,40 +462,7 @@ global
 
                 return this;
             }
-        }, window._.de) || window.__({
-            _: de._({
-                on : de._({
-                    value (ee) {
-                        is.array(ee) && ee.each((vv) => {
-                            window._.constructor.__({
-                                [vv]: de._({
-                                    value (e) {
-                                        is.pure(e) && e._.each((v, k) => {
-                                            is.object(this[k][vv]) && this[k][vv][e._[k].type](e._[k]);
-                                            is.function(this[k][vv]) && this[k][vv](e._[k]);
-                                        });
-                                    }
-                                })
-                            });
-                            this.$.on(vv, window._);
-                        });
-
-                        is.string(ee) && window._.constructor.__({
-                            [ee]: de._({
-                                value (e) {
-                                    is.pure(e) && e._.each((v, k) => {
-                                        is.object(this[k][ee]) && this[k][ee][e._[k].type](e._[k]);
-                                        is.function(this[k][ee]) && this[k][ee](e._[k]);
-                                    });
-                                }
-                            })
-                        }) && this.$.on(ee, window._);
-
-                        return this;
-                    }
-                })
-            })
-        });
+        }, window._ && window._.de || {});
 
         Event.__({
             $: de._({
