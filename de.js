@@ -106,6 +106,7 @@ global
                 for (let v of this) {
                     cb(v);
                 }
+                cb = null;
                 return this;
             }
         }),
@@ -129,7 +130,9 @@ global
 
         __: de._({
             value (p) {
-                return de.fine(this.prototype, p) && this.keep;
+                de.fine(this.prototype, p);
+                p = null;
+                return this.keep;
             }
         }),
 
@@ -147,6 +150,7 @@ global
                     }
                     default: break;
                 }
+                p = null;
                 return this.keep;
             }
         }),
@@ -154,12 +158,14 @@ global
         fact: de._({
             value (o) {
                 Object.assign(this, o);
-                return this.__(o.map((vv, k) => ({
+                this.__(o.map((vv, k) => ({
                     [k]: de._({
                         get: () => this[k],
                         set: (v) => this[k] = v
                     })
                 })));
+                o = null;
+                return this;
             }
         })
     });
@@ -174,6 +180,8 @@ global
 
             set (t) {
                 this.__({__$__: de.writable({value: t})});
+                t = null;
+                return true;
             }
         }),
 
@@ -211,6 +219,7 @@ global
         on: de._({
             value (e) {
                 is.array(e) && e.each((v) => this.on(v)) || this.$ && this.$.on(e, this);
+                e = null;
                 return this;
             }
         }),
@@ -218,6 +227,7 @@ global
         off: de._({
             value (e) {
                 is.array(e) && e.each((v) => this.off(v)) || this.$ && this.$.off(e, this);
+                e = null;
                 return this;
             }
         }),
@@ -225,13 +235,16 @@ global
         each: de._({
             value (f) {
                 this.keys.forEach((k) => f(this[k], k));
+                f = null;
                 return this;
             }
         }),
 
         deep: de._({
             value (cb) {
-                return this.each((v, k) => is.pure(v) && v.deep(cb) || cb(v, k));
+                this.each((v, k) => is.pure(v) && v.deep(cb) || cb(v, k));
+                cb = null;
+                return this;
             }
         }),
 
@@ -256,14 +269,17 @@ global
         map: de._({
             value (cb) {
                 let a = this.copy;
-                return a.each((v, k) => a[k] = cb(v, k));
+                a.each((v, k) => a[k] = cb(v, k));
+                cb = null;
+                return a;
             }
         }),
 
         mix: de._({
             value (cb) {
-                let a = this.clone;
-                return a.map((v, k) => is.pure(v) && v.mix(cb) || cb(v, k));
+                let a = this.map((v, k) => is.pure(v) && v.mix(cb) || cb(v, k));
+                cb = null;
+                return a;
             }
         }),
 
@@ -283,6 +299,8 @@ global
 
             set (v) {
                 this.__({__oppo__: de._({value: v})});
+                v = null;
+                return true;
             }
         }),
 
@@ -293,6 +311,8 @@ global
 
             set (v) {
                 this.__({__stop__: de._({value: v})});
+                v = null;
+                return true;
             }
         }),
 
@@ -307,8 +327,11 @@ global
             value (e) {
                 this.stop && e.stopPropagation();
                 this.oppo && e.preventDefault();
-                is.object(this[e.type]) && this[e.type][this[e.type].type].call(this, e);
+                is.object(this[e.type]) && this[e.type][
+                    is.string(e._.type) && e._.type || this[e.type].type
+                ].call(this, e);
                 is.function(this[e.type]) && this[e.type](e);
+                e = null;
             }
         })
     });
@@ -317,13 +340,17 @@ global
         _: de._({value: Array.prototype.splice}),
         id: de._({
             value (t, s) {
-                return this.indexOf(t, s) === -1 && false || this.indexOf(t, s);
+                let r = this.indexOf(t, s) === -1 && false || this.indexOf(t, s);
+                t = null;
+                s = null;
+                return r;
             }
         }),
 
         each: de._({
             value (f) {
                 this.forEach(f);
+                f = null;
                 return this;
             }
         }),
@@ -331,6 +358,7 @@ global
         pull: de._({
             value (v) {
                 this.unshift(v);
+                v = null;
                 return this;
             }
         }),
@@ -340,6 +368,7 @@ global
         push: de._({
             value (v) {
                 this[this.length] = v;
+                v = null;
                 return this;
             }
         })
@@ -392,6 +421,7 @@ global
                     }
                     default: return this;
                 }
+                b = null;
                 return res;
             }
         })
@@ -416,6 +446,9 @@ global
             on: de._({
                 value (e, cb, p) {
                     this.addEventListener(e, cb, p);
+                    e = null;
+                    cb = null;
+                    p = null;
                     return this;
                 }
             }),
@@ -423,6 +456,9 @@ global
             off: de._({
                 value (e, cb, p) {
                     this.removeEventListener(e, cb, p);
+                    e = null;
+                    cb = null;
+                    p = null;
                     return this;
                 }
             }),
@@ -447,28 +483,42 @@ global
             $: de._({
                 value (t) {
                     switch (is(t)) {
-                        case Object: return this.$(t.$);
+                        case Object: {
+                            this.$(t.$);
+                            break;
+                        }
+
                         case Array || NodeList || HTMLCollection || ir: {
                             let ve = document.createDocumentFragment();
                             t.each((v) => ve.$(v));
-                            return this.$(ve);
+                            this.$(ve);
+                            break;
                         }
 
-                        case null || undefined: return this.outer.out(this);
+                        case null || undefined: {
+                            this.outer.out(this);
+                            break;
+                        }
+
                         case String || Number || Boolean: {
                             is.defined(this.src) && this._({src: String(t)}) || this.append(t);
-                            return this;
+                            break;
                         }
 
-                        default: return this.append(t) || this;
+                        default: this.append(t) || this;
                     }
+
+                    t = null;
+                    return this;
                 }
             }),
 
             out: de._({
                 value (t) {
                     let outer = this.outer;
-                    return is.valid(t) && (!this.removeChild(t) || this) || !outer.removeChild(this) || outer;
+                    let r = is.valid(t) && (!this.removeChild(t) || this) || !outer.removeChild(this) || outer;
+                    t = null;
+                    return r;
                 }
             }),
 
@@ -476,7 +526,9 @@ global
                 value (a) {
                     is.object(a) &&
                     a.each((v, k) => is.valid(v) && !this.setAttribute(k, v) || this.removeAttribute(k));
-                    return is.string(a) && this.getAttribute(a) || this;
+                    let r = is.string(a) && this.getAttribute(a);
+                    a = null;
+                    return r || this;
                 }
             }),
 
@@ -498,17 +550,12 @@ global
                 }
             }),
 
-            wear: de._({
+            css: de._({
                 value (s) {
                     is.object(s) && this.style._(s);
                     this.style.cssText = is.string(s) && s || this.style.cssText;
+                    s = null;
                     return this;
-                }
-            }),
-
-            css: de._({
-                get () {
-                    return this.wear;
                 }
             }),
 
@@ -519,7 +566,24 @@ global
 
                 set (v) {
                     this.innerText = v;
+                    v = null;
                     return true;
+                }
+            }),
+
+            scrollH: de._({
+                value (v) {
+                    this.scrollLeft = v;
+                    v = null;
+                    return this;
+                }
+            }),
+
+            scrollV: de._({
+                value (v) {
+                    this.scrollTop = v;
+                    v = null;
+                    return this;
                 }
             })
         });
@@ -527,13 +591,18 @@ global
         HTMLCollection.__({
             id: de._({
                 value (t, s) {
-                    return this.toArray.id(t, s);
+                    let r = this.toArray.id(t, s);
+                    t = null;
+                    s = null;
+                    return r;
                 }
             }),
 
             each: de._({
                 value (f) {
-                    return this.toArray.each(f);
+                    let r = this.toArray.each(f);
+                    f = null;
+                    return r;
                 }
             })
         });
@@ -541,13 +610,18 @@ global
         NodeList.__({
             id: de._({
                 value (t, s) {
-                    return this.toArray.id(t, s);
+                    let r = this.toArray.id(t, s);
+                    t = null;
+                    s = null;
+                    return r;
                 }
             }),
 
             each: de._({
                 value (f) {
-                    return this.toArray.each(f);
+                    let r = this.toArray.each(f);
+                    f = null;
+                    return r;
                 }
             })
         });
@@ -599,10 +673,10 @@ global
         HTMLTableElement.__({
             $: de._({
                 value (c) {
-                    return is.valid(c) &&
-                        (is.array(c) && !c.each((v) => this.insertRow().$(v)) || this) ||
-                        (!this.insertRow().$(c) || this) ||
-                        this.insertRow();
+                    let r = is.valid(c) &&
+                        (is.array(c) && c.each((v) => this.insertRow().$(v)) || this.insertRow().$(c)) || this.insertRow();
+                        c = null;
+                    return r;
                 }
             }),
 
@@ -614,11 +688,13 @@ global
 
             deep: de._({
                 value (f) {
-                    return this.rows.each(
+                    this.rows.each(
                         (cr, r) => cr.each(
                             (v, c) => f(v, r, c)
                         )
                     );
+                    f = null;
+                    return this;
                 }
             })
         });
@@ -626,16 +702,18 @@ global
         HTMLTableRowElement.__({
             $: de._({
                 value (c) {
-                    return is.valid(c) &&
-                        (is.array(c) && !c.each((v) => this.insertCell().$(v)) || this.outer) ||
-                        (!this.insertCell().$(c) || this.outer) ||
-                        this.insertCell();
+                    let r = is.valid(c) &&
+                        (is.array(c) && c.each((v) => this.insertCell().$(v)) || this.insertCell().$(c)) || this.insertCell();
+                        c = null;
+                    return r;
                 }
             }),
 
             each: de._({
                 value (f) {
-                    return this.cells.each(f);
+                    this.cells.each(f);
+                    f = null;
+                    return this;
                 }
             })
         });
@@ -645,6 +723,7 @@ global
                 value (o) {
                     is.pure(o) &&
                     o.each((v, k) => this.options.add(is(v) === HTMLOptionElement && v || new Option(v, k)));
+                    o = null;
                     return this;
                 }
             }),
@@ -656,6 +735,7 @@ global
 
                 set (v) {
                     this.value = v;
+                    v = null;
                     return this;
                 }
             })
@@ -673,6 +753,7 @@ global
                         }
                         default: Element.prototype.$.call(this, t);
                     }
+                    t = null;
                     return this;
                 }
             }),
@@ -696,6 +777,7 @@ global
                         }
                         default: Element.prototype.$.call(this, t);
                     }
+                    t = null;
                     return this;
                 }
             }),
@@ -725,6 +807,7 @@ global
 
                         default: return this.value = v;
                     }
+                    v = null;
                     return true;
                 }
             })
@@ -738,6 +821,7 @@ global
 
                 set (v) {
                     this.value = v;
+                    v = null;
                     return this;
                 }
             })
@@ -762,6 +846,7 @@ global
                     o.header && this.header(o.header);
                     this.withCredentials = o.credential || false;
                     this.send(o.data || null);
+                    o = null;
                     return this;
                 }
             }),
@@ -769,20 +854,22 @@ global
             header: de._({
                 value (v) {
                     is.object(v) && v.each((v, k) => this.setRequestHeader(k, v));
+                    v = null;
                     return this;
                 }
             }),
 
             sayType: de._({
                 value (type, cs) {
-                    return {header: {"Content-Type": type + "; charset=" + cs}};
+                    let r = {header: {"Content-Type": type + "; charset=" + cs}};
+                    type = null;
+                    cs = null;
+                    return r;
                 }
             }),
 
             stream: de._({
-                header: {
-                    "Content-Type": "text/stream; charset=utf-8"
-                }
+                value: {header: {"Content-Type": "text/stream; charset=utf-8"}}
             })
         });
 
@@ -796,116 +883,81 @@ global
             return () => clearInterval(t);
         };
 
+        window.$ = Object.assign(window.$ && window.$ || ((q) => document.querySelectorAll(q).length === 1 &&
+            document.querySelector(q) ||
+            document.querySelectorAll(q)),
+
+            {
+                get html () {
+                    return document.documentElement;
+                },
+    
+                get head () {
+                    return document.head;
+                },
+    
+                get body () {
+                    return document.body;
+                },
+    
+                get https () {
+                    return location.https;
+                },
+    
+                get here () {
+                    return location.hostname;
+                },
+    
+                get port () {
+                    return location.port;
+                },
+    
+                get path () {
+                    return location.pathname;
+                }
+            }
+        );
+
         Window.__({
-            $: de._({
-                value : Object.assign(window.$ && window.$ || ((q) => document.querySelectorAll(q).length === 1 &&
-                    document.querySelector(q) ||
-                    document.querySelectorAll(q)),
-
-                    {
-                        get html () {
-                            return document.documentElement;
-                        },
-            
-                        get head () {
-                            return document.head;
-                        },
-            
-                        get body () {
-                            return document.body;
-                        },
-            
-                        get https () {
-                            return location.https;
-                        },
-            
-                        get here () {
-                            return location.hostname;
-                        },
-            
-                        get port () {
-                            return location.port;
-                        },
-            
-                        get path () {
-                            return location.pathname;
-                        }
-                    }
-                )
-            }),
-
-            _: de._({
-                value: Object.create({
-                    on (ee) {
-                        is.array(ee) && ee.each((vv) => {
-                            window._.constructor.__({
-                                [vv]: de._({
-                                    value (e) {
-                                        is.pure(e) && e._.each((v, k) => {
-                                            is.object(this[k][vv]) && this[k][vv][e._[k].type](e._[k]);
-                                            is.function(this[k][vv]) && this[k][vv](e._[k]);
-                                        });
-                                    }
-                                })
-                            });
-                            this.$.on(vv, window._);
-                        });
-        
-                        is.string(ee) && window._.constructor.__({
-                            [ee]: de._({
-                                value (e) {
-                                    is.pure(e) && e._.each((v, k) => {
-                                        is.object(this[k][ee]) && this[k][ee][e._[k].type](e._[k]);
-                                        is.function(this[k][ee]) && this[k][ee](e._[k]);
-                                    });
-                                }
-                            })
-                        }) && this.$.on(ee, window._);
-        
-                        return this;
-                    }
-                }, window._ && window._.de || {})
-            }),
-
-            article: de._({get: () => document.createElement("article")}),
-            div: de._({get: () => document.createElement("div")}),
-            section: de._({get: () => document.createElement("section")}),
-            nav: de._({get: () => document.createElement("nav")}),
-            aside: de._({get: () => document.createElement("aside")}),
-            header: de._({get: () => document.createElement("header")}),
-            footer: de._({get: () => document.createElement("footer")}),
-            h1: de._({get: () => document.createElement("h1")}),
-            h2: de._({get: () => document.createElement("h2")}),
-            h3: de._({get: () => document.createElement("h3")}),
-            h4: de._({get: () => document.createElement("h4")}),
-            h5: de._({get: () => document.createElement("h5")}),
-            h6: de._({get: () => document.createElement("h6")}),
-            p: de._({get: () => document.createElement("p")}),
-            br: de._({get: () => document.createElement("br")}),
-            table: de._({get: () => document.createElement("table")}),
-            ul: de._({get: () => document.createElement("ul")}),
-            ol: de._({get: () => document.createElement("ol")}),
-            li: de._({get: () => document.createElement("li")}),
-            dl: de._({get: () => document.createElement("dl")}),
-            dt: de._({get: () => document.createElement("dt")}),
-            dd: de._({get: () => document.createElement("dd")}),
-            form: de._({get: () => document.createElement("form")}),
-            label: de._({get: () => document.createElement("label")}),
-            input: de._({get: () => document.createElement("input")}),
-            checkbox: de._({get: () => window.input._({type: "checkbox"})}),
-            radio: de._({get: () => window.input._({type: "radio"})}),
-            text: de._({get: () => window.input._({type: "text"})}),
-            textarea: de._({get: () => document.createElement("textarea")}),
-            button: de._({get: () => document.createElement("button")}),
-            img: de._({get: () => document.createElement("img")}),
-            area: de._({get: () => document.createElement("area")}),
-            map: de._({get: () => document.createElement("map")}),
-            iframe: de._({get: () => document.createElement("iframe")}),
-            select: de._({get: () => document.createElement("select")}),
-            a: de._({get: () => document.createElement("a")}),
-            em: de._({get: () => document.createElement("em")}),
-            strong: de._({get: () => document.createElement("strong")}),
-            span: de._({get: () => document.createElement("span")})
+            article:    de._({get: () => document.createElement("article")}),
+            div:        de._({get: () => document.createElement("div")}),
+            section:    de._({get: () => document.createElement("section")}),
+            nav:        de._({get: () => document.createElement("nav")}),
+            aside:      de._({get: () => document.createElement("aside")}),
+            header:     de._({get: () => document.createElement("header")}),
+            footer:     de._({get: () => document.createElement("footer")}),
+            h1:         de._({get: () => document.createElement("h1")}),
+            h2:         de._({get: () => document.createElement("h2")}),
+            h3:         de._({get: () => document.createElement("h3")}),
+            h4:         de._({get: () => document.createElement("h4")}),
+            h5:         de._({get: () => document.createElement("h5")}),
+            h6:         de._({get: () => document.createElement("h6")}),
+            p:          de._({get: () => document.createElement("p")}),
+            br:         de._({get: () => document.createElement("br")}),
+            table:      de._({get: () => document.createElement("table")}),
+            ul:         de._({get: () => document.createElement("ul")}),
+            ol:         de._({get: () => document.createElement("ol")}),
+            li:         de._({get: () => document.createElement("li")}),
+            dl:         de._({get: () => document.createElement("dl")}),
+            dt:         de._({get: () => document.createElement("dt")}),
+            dd:         de._({get: () => document.createElement("dd")}),
+            form:       de._({get: () => document.createElement("form")}),
+            label:      de._({get: () => document.createElement("label")}),
+            input:      de._({get: () => document.createElement("input")}),
+            checkbox:   de._({get: () => window.input._({type: "checkbox"})}),
+            radio:      de._({get: () => window.input._({type: "radio"})}),
+            text:       de._({get: () => window.input._({type: "text"})}),
+            textarea:   de._({get: () => document.createElement("textarea")}),
+            button:     de._({get: () => document.createElement("button")}),
+            img:        de._({get: () => document.createElement("img")}),
+            area:       de._({get: () => document.createElement("area")}),
+            map:        de._({get: () => document.createElement("map")}),
+            iframe:     de._({get: () => document.createElement("iframe")}),
+            select:     de._({get: () => document.createElement("select")}),
+            a:          de._({get: () => document.createElement("a")}),
+            em:         de._({get: () => document.createElement("em")}),
+            strong:     de._({get: () => document.createElement("strong")}),
+            span:       de._({get: () => document.createElement("span")})
         });
 
         let XD = function (uri, ssl) {
@@ -923,13 +975,17 @@ global
             $.body.$(this.$);
         }._({
             load (e) {
-                e.$.$();
+                this.off("load").$.$();
+                e = null;
             }
         });
 
         let Socket = glb.Socket = function (uri = $.here, ssl = $.https) {
             uri === $.here || new XD(uri, ssl);
-            return new WebSocket(ssl && "wss://" + uri || "ws://" + uri);
+            let r = new WebSocket(ssl && "wss://" + uri || "ws://" + uri);
+            uri = null;
+            ssl = null;
+            return r;
         };
     })();
 })(window || process);
