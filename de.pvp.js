@@ -57,15 +57,15 @@ let PvP = function (
     open: de._({
         value () {
             this.talk = this.$.createDataChannel("talk").on("open", this.cb);
-            this.$.createOffer().then((v) => this.local = v, (e) => e);
+            return this.$.createOffer().then((v) => this.local = v, (e) => e);
         }
     }),
 
     take: de._({
         value (signal) {
             this.remote = signal;
-            this.$.createAnswer().then((v) => this.local = v, (e) => e);
-            signal = null;
+            Wait(10, () => signal = null);
+            return this.$.createAnswer().then((v) => this.local = v, (e) => e);
         }
     }),
 
