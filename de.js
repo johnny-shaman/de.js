@@ -93,12 +93,6 @@ global
             }, o)
         },
 
-        ep: {
-            value: (a) => (b) => is.function(a) &&
-                b.each((v, k) => is.pure(v) && de.ep(v)(a) || a(v, k)) ||
-                a.each((v, k) => is.pure(v) && de.ep(v)(b) || b(v, k))
-        },
-
         fine: {value: Object.defineProperties},
         al: {value: Object.create},
         tail: {value: Object.getOwnPropertyDescriptors}
@@ -354,6 +348,12 @@ global
     });
 
     String.__({
+        _: de._({
+            get () {
+                return this.json;
+            }
+        }),
+
         id: de._({
             get () {
                 return this.indexOf;
@@ -448,14 +448,67 @@ global
             })
         });
 
-        window._ || window.__({
-            _: Object.create({
-                message (e) {
-                    e._.each((v, k) => is.valid(this[k].message) && this[k].message[e._[k].type](e._[k]));
-                },
+        window._ && Object.create({
+            on (ee) {
+                is.array(ee) && ee.each((vv) => {
+                    window._.constructor.__({
+                        [vv]: de._({
+                            value (e) {
+                                is.pure(e) && e._.each((v, k) => {
+                                    is.object(this[k][vv]) && this[k][vv][e._[k].type](e._[k]);
+                                    is.function(this[k][vv]) && this[k][vv](e._[k]);
+                                });
+                            }
+                        })
+                    });
+                    this.$.on(vv, window._);
+                });
 
-                progress (e) {
-                }
+                is.string(ee) && window._.constructor.__({
+                    [ee]: de._({
+                        value (e) {
+                            is.pure(e) && e._.each((v, k) => {
+                                is.object(this[k][ee]) && this[k][ee][e._[k].type](e._[k]);
+                                is.function(this[k][ee]) && this[k][ee](e._[k]);
+                            });
+                        }
+                    })
+                }) && this.$.on(ee, window._);
+
+                return this;
+            }
+        }, window._.de) || window.__({
+            _: de._({
+                on : de._({
+                    value (ee) {
+                        is.array(ee) && ee.each((vv) => {
+                            window._.constructor.__({
+                                [vv]: de._({
+                                    value (e) {
+                                        is.pure(e) && e._.each((v, k) => {
+                                            is.object(this[k][vv]) && this[k][vv][e._[k].type](e._[k]);
+                                            is.function(this[k][vv]) && this[k][vv](e._[k]);
+                                        });
+                                    }
+                                })
+                            });
+                            this.$.on(vv, window._);
+                        });
+
+                        is.string(ee) && window._.constructor.__({
+                            [ee]: de._({
+                                value (e) {
+                                    is.pure(e) && e._.each((v, k) => {
+                                        is.object(this[k][ee]) && this[k][ee][e._[k].type](e._[k]);
+                                        is.function(this[k][ee]) && this[k][ee](e._[k]);
+                                    });
+                                }
+                            })
+                        }) && this.$.on(ee, window._);
+
+                        return this;
+                    }
+                })
             })
         });
 
@@ -468,7 +521,7 @@ global
 
             _: de._({
                 get () {
-                    return this.data && this.data.json;
+                    return this.data && this.data._;
                 }
             })
         });
@@ -577,6 +630,7 @@ global
                 get () {
                     return this.innerText;
                 },
+
                 set (v) {
                     this.innerText = v;
                     return true;
@@ -810,8 +864,6 @@ global
                 }
             }),
 
-            
-
             say: de._({
                 value (o) {
                     this.open(
@@ -836,18 +888,14 @@ global
             }),
 
             sayType: de._({
-                value (type, cs = "utf-8") {
-                    return this.header({"Content-Type": type + "; charset=" + cs});
+                value (type, cs) {
+                    return {header: {"Content-Type": type + "; charset=" + cs}};
                 }
             }),
 
-            connect: de._({
-                value (o) {
-                    return this.say(o._({
-                        header: {
-                            "Content-Type": "text/stream; charset=utf-8"
-                        }
-                    }));
+            stream: de._({
+                header: {
+                    "Content-Type": "text/stream; charset=utf-8"
                 }
             })
         });
