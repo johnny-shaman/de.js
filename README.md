@@ -23,7 +23,7 @@ let MyButton = function () {
 $.body.$(article.$(new MyButton()));
 ~~~
 
-You can Connect of webRTC;
+You can Connect on webRTC;
 ~~~javascript
 let pvp = new PvP((e) => window.talk = e.$);
 ~~~
