@@ -29,5 +29,4 @@ Let's hack it!
 # reference
 https://github.com/johnny-shaman/de.js/wiki
 
-# Lisence
-MIT
+GNU Public License v3
