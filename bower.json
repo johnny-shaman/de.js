@@ -1,5 +1,19 @@
 {
-    "name": "de.js",
-    "version": "0.1.5",
-    "main": "de.js",
+  "name": "de.js",
+  "homepage": "https://github.com/johnny-shaman/de.js",
+  "authors": [
+    "Noboru_Okazaki <johnny.shaman.saxophonist@gmail.com>"
+  ],
+  "description": "de.js contribute at DataFlow EventDriven Multi Paradime Javascript thinking at Functional Programing",
+  "main": "de.js",
+  "keywords": [
+    "functional",
+    "de",
+    "WebRTC",
+    "WebApplication",
+    "webapp",
+    "SinglePage",
+    "MultiUI"
+  ],
+  "license": "GNU Public License v3"
 }
