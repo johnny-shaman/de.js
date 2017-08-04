@@ -1,5 +1,5 @@
 ~~~javascript
-//de.js is
+//de.js constructor has key value property
 
 let MyB = function () {
     this
@@ -15,6 +15,21 @@ let MyB = function () {
 });
 
 $.body.$(new MyB());
+
+//de.js constructor has array
+
+let MyAB = function () {
+    this
+    ._([0,1,2,3,4,5])
+    ._(button.$("OK"))
+    .on("click");
+}
+._(Array)
+._({
+    click () {
+        console.log(this[2]);
+    }
+});
 ~~~
 
 ~~~javascript
@@ -36,4 +51,6 @@ MyB.prototype.click = function (e) {
 };
 
 document.body.appendChild(new MyB().$);
+
+//Array constructor is very difficultly...
 ~~~
