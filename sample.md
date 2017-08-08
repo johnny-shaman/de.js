@@ -52,5 +52,26 @@ MyB.prototype.click = function (e) {
 
 document.body.appendChild(new MyB().$);
 
-//Array constructor is very difficultly...
+//Array
+
+let MyAB = function () {
+    [0, 1, 2, 3, 4, 5].forEach((v, k) => this[k] = v);
+    this.$ = document.createElement("button");
+    this.$.appendChild(new Text("OK"));
+    this.$.on("click", this);
+};
+
+MyAB.prototype = Object.create(Array.prototype, {
+    constructor: {
+        configurable: true,
+        value: MyAB
+});
+
+MyAB.prototype.handleEvent = function (e) {
+    this[e.type](e);
+};
+
+MyAB.prototype.click = function () {
+    console.log(this[2]);
+};
 ~~~
